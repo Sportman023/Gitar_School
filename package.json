@@ -1,0 +1,16 @@
+{
+  "name": "gitar-school",
+  "version": "0.1.0",
+  "description": "Приложение-тренажёр для музыкальной школы: ноты, цвета и гитара",
+  "type": "module",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "icons": "node tools/make-icons.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

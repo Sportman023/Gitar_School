@@ -1,0 +1,200 @@
+// Registry of the app's sections.
+// To add a topic, create a module with
+// { id, title, subtitle, emoji, accent, group, mount(root) } and list it here.
+
+import learn from './learn.js';
+import rainbow from './rainbow.js';
+import staffLearn from './staff-learn.js';
+import fretLearn from './fretboard-learn.js';
+import stringsLearn from './strings.js';
+import octaveLearn from './octave2.js';
+import { colorToggle } from '../core/controls.js';
+import { renderStaff } from '../core/staff.js';
+import { renderFretboard } from '../core/fretboard.js';
+import { store } from '../core/store.js';
+import { createQuiz } from '../core/quiz.js';
+import { el, noteBubble, colorBubble, noteStyle, sample } from '../core/ui.js';
+import { playNote } from '../core/audio.js';
+import { NOTE_BY_ID, NOTES_2, TWO_OCTAVES, octaveName } from '../data/notes.js';
+
+// Play a reference C first, then the hidden note: the child compares
+// pitches instead of needing perfect pitch.
+function playWithReference(note) {
+  playNote(NOTE_BY_ID.do.freq, { duration: 1.2, volume: 0.45 });
+  setTimeout(() => playNote(note.freq, { duration: 1.6 }), 900);
+}
+
+const noteToColor = createQuiz({
+  id: 'note-to-color',
+  title: 'Нота → Цвет',
+  subtitle: 'Показываем ноту, выбираешь цвет',
+  emoji: '🖍️',
+  accent: '#7E57C2',
+  group: 'Ноты и цвета',
+  optionsClass: 'options options--colors',
+  renderPrompt: (note) => el('div', { class: 'prompt' },
+    el('div', { class: 'prompt__label' }, 'Какого цвета нота'),
+    el('div', { class: 'prompt__big' }, note.ru),
+    el('div', { class: 'prompt__label' }, `(${note.en})`),
+  ),
+  renderOption: (note) => colorBubble(note),
+});
+
+const colorToNote = createQuiz({
+  id: 'color-to-note',
+  title: 'Цвет → Нота',
+  subtitle: 'Показываем цвет, выбираешь ноту',
+  emoji: '🎵',
+  accent: '#EC407A',
+  group: 'Ноты и цвета',
+  optionsClass: 'options options--names',
+  renderPrompt: (note) => el('div', { class: 'prompt' },
+    el('div', { class: 'prompt__label' }, 'Какая нота этого цвета?'),
+    el('div', { class: 'prompt__swatch', style: noteStyle(note) }),
+  ),
+  renderOption: (note) => el('span', { class: 'option__name' }, note.ru),
+});
+
+const listenAndGuess = createQuiz({
+  id: 'sound-to-note',
+  title: 'Угадай на слух',
+  subtitle: 'Сначала До, потом загадка',
+  emoji: '👂',
+  accent: '#FFA726',
+  group: 'Ноты и цвета',
+  onAsk: playWithReference,
+  optionsClass: 'options options--names',
+  renderPrompt: (note) => el('div', { class: 'prompt' },
+    el('div', { class: 'prompt__label' }, 'Послушай и выбери ноту'),
+    el('button', {
+      class: 'prompt__play',
+      type: 'button',
+      onclick: () => playWithReference(note),
+    }, '🔊'),
+    el('div', { class: 'prompt__label' }, 'сначала прозвучит До, потом загадка'),
+  ),
+  renderOption: (note) => noteBubble(note, { colored: true }),
+});
+
+/** The note name in large type with its octave underneath. */
+function namePrompt(label, note) {
+  return el('div', { class: 'prompt' },
+    el('div', { class: 'prompt__label' }, label),
+    el('div', { class: 'prompt__big' }, note.ru),
+    el('div', { class: 'prompt__label' }, octaveName(note)),
+  );
+}
+
+// Staff and fretboard games are the same for both octaves, so these are
+// factories: config adds the id, the group and the notes (first octave by default).
+
+// Reading notes on the staff. Note heads follow the shared "coloured notes"
+// setting: colour is a hint here (red head → C), and the answers are words,
+// otherwise the child could match colour to colour without reading the staff.
+const staffToNote = (config) => createQuiz({
+  title: 'Читаем ноты',
+  subtitle: 'Нота на стане → название',
+  emoji: '👀',
+  accent: '#5C6BC0',
+  optionsClass: 'options options--names',
+  renderControls: (refresh) => colorToggle(refresh),
+  renderPrompt: (note) => el('div', { class: 'prompt' },
+    el('div', { class: 'prompt__label' }, 'Какая это нота?'),
+    el('div', { class: 'prompt__paper' },
+      renderStaff(note, { colored: store.setting('coloredHeads', true) })),
+  ),
+  renderOption: (note) => el('span', { class: 'option__name' }, note.ru),
+  ...config,
+});
+
+// The reverse task: given a name, find where the note sits.
+// Heads are always black here, otherwise colour would give the answer away.
+const noteToStaff = (config) => createQuiz({
+  title: 'Ставим ноты',
+  subtitle: 'Название → место на стане',
+  emoji: '✍️',
+  accent: '#00897B',
+  optionsClass: 'options options--staves',
+  renderPrompt: (note) => namePrompt('Где на стане живёт нота', note),
+  renderOption: (note) => el('div', { class: 'prompt__paper prompt__paper--small' },
+    renderStaff(note, { colored: false })),
+  ...config,
+});
+
+// The fretboard works like the staff: colour hints in one direction, and
+// in the reverse task the dots are always black so colour can't give the answer away.
+const fretToNote = (config) => createQuiz({
+  title: 'Читаем гриф',
+  subtitle: 'Позиция на грифе → название',
+  emoji: '🔎',
+  accent: '#8D6E63',
+  optionsClass: 'options options--names',
+  renderControls: (refresh) => colorToggle(refresh),
+  renderPrompt: (note) => el('div', { class: 'prompt' },
+    el('div', { class: 'prompt__label' }, 'Какая это нота?'),
+    el('div', { class: 'prompt__wood' },
+      renderFretboard(note, { colored: store.setting('coloredHeads', true) })),
+  ),
+  renderOption: (note) => el('span', { class: 'option__name' }, note.ru),
+  ...config,
+});
+
+const noteToFret = (config) => createQuiz({
+  title: 'Находим на грифе',
+  subtitle: 'Название → где прижать струну',
+  emoji: '👆',
+  accent: '#6D4C41',
+  optionsClass: 'options options--boards',
+  renderPrompt: (note) => namePrompt('Где на гитаре взять ноту', note),
+  renderOption: (note) => el('div', { class: 'prompt__wood prompt__wood--small' },
+    renderFretboard(note, { colored: false })),
+  ...config,
+});
+
+const SECOND = { group: 'Вторая октава', notes: NOTES_2 };
+
+// Both octaves mixed. Colour only hints the name: C4 and C5 share a colour.
+// That's why the options always include the same note from the other octave —
+// which of the two it is has to be read from the staff.
+const whichOctave = staffToNote({
+  id: 'which-octave',
+  title: 'Первая или вторая?',
+  subtitle: 'Читаем ноты двух октав вперемешку',
+  emoji: '🪜',
+  accent: '#F4511E',
+  group: 'Вторая октава',
+  notes: TWO_OCTAVES,
+  renderOption: (note) => el('span', { class: 'option__stack' },
+    el('span', { class: 'option__name' }, note.ru),
+    el('span', { class: 'option__octave' }, octaveName(note))),
+  pickOthers: (note, pool, count) => {
+    const twin = pool.find((other) => other.pc === note.pc && other.id !== note.id);
+    if (!twin) return sample(pool, count, [note]);
+    return [twin, ...sample(pool, count - 1, [note, twin])];
+  },
+  explainAnswer: (note) => `Это ${note.ru} ${octaveName(note)}`,
+});
+
+export const MODULES = [
+  learn,
+  noteToColor,
+  colorToNote,
+  rainbow,
+  listenAndGuess,
+
+  staffLearn,
+  staffToNote({ id: 'staff-to-note', group: 'Нотный стан' }),
+  noteToStaff({ id: 'note-to-staff', group: 'Нотный стан' }),
+
+  stringsLearn,
+  fretLearn,
+  fretToNote({ id: 'fret-to-note', group: 'Гриф гитары' }),
+  noteToFret({ id: 'note-to-fret', group: 'Гриф гитары' }),
+
+  octaveLearn,
+  staffToNote({ id: 'staff2-to-note', ...SECOND }),
+  noteToStaff({ id: 'note-to-staff2', ...SECOND }),
+  fretToNote({ id: 'fret2-to-note', ...SECOND }),
+  noteToFret({ id: 'note-to-fret2', ...SECOND }),
+  whichOctave,
+];
