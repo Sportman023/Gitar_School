@@ -1,4 +1,5 @@
 // Sound is synthesised right in the browser (Web Audio), no audio files.
+// The only exception is the piano, which is made of recordings (piano.js).
 // A plucked string uses the Karplus–Strong algorithm: a short burst of noise
 // that loops on itself and slowly decays. It sounds close to a guitar.
 

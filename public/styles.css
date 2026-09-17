@@ -219,22 +219,10 @@ main {
 }
 
 .note-card:active { transform: scale(.96); }
-.note-card--open { grid-column: 1 / -1; }
 
 .note-card__name { font-size: 34px; font-weight: 900; line-height: 1.1; }
 .note-card__latin { font-size: 15px; font-weight: 700; opacity: .75; }
 .note-card__color { margin-top: 6px; font-size: 14px; font-weight: 700; opacity: .9; }
-
-.note-card__details {
-  margin-top: 12px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, .28);
-  font-size: 14px;
-  font-weight: 700;
-  display: grid;
-  gap: 4px;
-}
 
 .note-card__hint { margin-top: 8px; font-size: 12px; opacity: .65; min-height: 14px; }
 

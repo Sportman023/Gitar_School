@@ -14,14 +14,15 @@ import { renderFretboard } from '../core/fretboard.js';
 import { store } from '../core/store.js';
 import { createQuiz } from '../core/quiz.js';
 import { el, noteBubble, colorBubble, noteStyle, sample } from '../core/ui.js';
-import { playNote } from '../core/audio.js';
+import { playPiano } from '../core/piano.js';
 import { NOTE_BY_ID, NOTES_2, TWO_OCTAVES, octaveName } from '../data/notes.js';
 
 // Play a reference C first, then the hidden note: the child compares
-// pitches instead of needing perfect pitch.
+// pitches instead of needing perfect pitch. Both are piano keys of the
+// first octave, C4–B4, so the hidden note is always at or above the C.
 function playWithReference(note) {
-  playNote(NOTE_BY_ID.do.freq, { duration: 1.2, volume: 0.45 });
-  setTimeout(() => playNote(note.freq, { duration: 1.6 }), 900);
+  playPiano(NOTE_BY_ID.do.freq, { duration: 0.8, volume: 1.1 });
+  playPiano(note.freq, { delay: 1.1, duration: 1.6 });
 }
 
 const noteToColor = createQuiz({
@@ -58,14 +59,14 @@ const colorToNote = createQuiz({
 const listenAndGuess = createQuiz({
   id: 'sound-to-note',
   title: 'Угадай на слух',
-  subtitle: 'Сначала До, потом загадка',
+  subtitle: 'Фортепиано, первая октава',
   emoji: '👂',
   accent: '#FFA726',
   group: 'Ноты и цвета',
   onAsk: playWithReference,
   optionsClass: 'options options--names',
   renderPrompt: (note) => el('div', { class: 'prompt' },
-    el('div', { class: 'prompt__label' }, 'Послушай и выбери ноту'),
+    el('div', { class: 'prompt__label' }, 'Послушай и выбери ноту первой октавы'),
     el('button', {
       class: 'prompt__play',
       type: 'button',

@@ -214,14 +214,6 @@ export const store = {
     commit();
   },
 
-  noteAccuracy(noteId) {
-    const stat = state.notes[noteId];
-    if (!stat) return null;
-    const total = stat.right + stat.wrong;
-    if (!total) return null;
-    return Math.round((stat.right / total) * 100);
-  },
-
   moduleBest(moduleId) {
     return state.modules[moduleId] || null;
   },

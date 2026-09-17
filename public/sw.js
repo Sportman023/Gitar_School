@@ -5,9 +5,16 @@
 // and in a subfolder such as GitHub Pages' /Gitar_School/.
 const CACHE = 'gitar-school-v2';
 
+// The piano recordings are cached up front, so the piano works offline
+// even in sections that were never opened online. Keep in sync with js/core/piano.js.
+const PRECACHE = [
+  './', './index.html', './styles.css',
+  ...['C4', 'Ds4', 'Fs4', 'A4', 'C5'].map((key) => `./audio/piano/${key}.mp3`),
+];
+
 self.addEventListener('install', (event) => {
   self.skipWaiting();
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(['./', './index.html', './styles.css'])).catch(() => {}));
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).catch(() => {}));
 });
 
 self.addEventListener('activate', (event) => {
