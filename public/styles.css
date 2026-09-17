@@ -486,13 +486,7 @@ main {
 .staff__stem { stroke: #1b1636; stroke-width: 1.9; stroke-linecap: round; }
 .staff__head { fill: #1b1636; stroke: none; }
 
-.staff__clef {
-  fill: none;
-  stroke: #1b1636;
-  stroke-width: 2.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
+.staff__clef { fill: #1b1636; stroke: none; }
 
 /* the "paper" a staff lies on */
 .prompt__paper,
