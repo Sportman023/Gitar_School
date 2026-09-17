@@ -616,8 +616,8 @@ main {
   overflow-x: auto;
 }
 
-/* on phones the ladder scrolls sideways instead of shrinking to crumbs */
-.staff-row .staff { min-width: 460px; }
+/* on phones a long ladder scrolls sideways instead of shrinking to crumbs */
+.staff-row--long .staff { min-width: 460px; }
 
 .staff__note { cursor: pointer; }
 .staff__hit { fill: transparent; }

@@ -1,5 +1,5 @@
 import { el, clear } from '../core/ui.js';
-import { renderStaff } from '../core/staff.js';
+import { renderStaff, renderStaffRow, playableMap } from '../core/staff.js';
 import { NOTES, octaveName } from '../data/notes.js';
 import { store } from '../core/store.js';
 import { colorToggle } from '../core/controls.js';
@@ -24,6 +24,15 @@ export default {
       screen.append(
         el('p', { class: 'lead' }, 'Пять линеек — это нотный стан. Нажми на нотку, чтобы её услышать.'),
         colorToggle(render),
+
+        el('h3', { class: 'block-title' }, 'Лесенка из семи нот'),
+        el('div', { class: 'staff-row' },
+          playableMap(renderStaffRow(NOTES, { colored }), (freq) => playNote(freq, { duration: 1.4 }))),
+        el('p', { class: 'caption' },
+          'Ноты шагают по очереди: линейка, промежуток, линейка, промежуток… '
+          + 'До живёт под станом на своей добавочной линеечке, а Си добралась до третьей линейки.'),
+
+        el('h3', { class: 'block-title' }, 'Где живёт каждая нота'),
         el('div', { class: 'staff-grid' },
           NOTES.map((note) => el('button', {
             class: 'staff-card',

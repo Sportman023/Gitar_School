@@ -35,7 +35,7 @@ export default {
         el("h3", { class: "block-title" }, "Лесенка из двух октав"),
         el(
           "div",
-          { class: "staff-row" },
+          { class: "staff-row staff-row--long" },
           playableMap(renderStaffRow(TWO_OCTAVES, { colored }), (freq) =>
             playNote(freq, { duration: 1.4 }),
           ),
