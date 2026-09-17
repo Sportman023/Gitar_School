@@ -63,7 +63,7 @@ const listenAndGuess = createQuiz({
   onAsk: playWithReference,
   optionsClass: 'options options--names',
   renderPrompt: (note) => el('div', { class: 'prompt' },
-    el('div', { class: 'prompt__label' }, 'Послушай и выбери ноту первой октавы'),
+    el('div', { class: 'prompt__label' }, 'Послушай и выбери ноту 1 октавы'),
     el('button', {
       class: 'prompt__play',
       type: 'button',

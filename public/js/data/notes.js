@@ -54,7 +54,7 @@ export const NOTES_2 = SECOND_OCTAVE.map(({ base, ...place }) => {
 // Both octaves in a row, low to high: C4 … B4, C5 … G5.
 export const TWO_OCTAVES = [...NOTES, ...NOTES_2];
 
-const OCTAVE_NAMES = { 1: 'первой октавы', 2: 'второй октавы' };
+const OCTAVE_NAMES = { 1: '1 октавы', 2: '2 октавы' };
 
-/** Octave name as used after a note name in class, e.g. "C of the second octave". */
+/** Octave label as used after a note name in class, e.g. "C of the 2nd octave". */
 export const octaveName = (note) => OCTAVE_NAMES[note.octave];

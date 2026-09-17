@@ -1,6 +1,6 @@
 import { el, clear } from '../core/ui.js';
 import { renderStaff } from '../core/staff.js';
-import { NOTES } from '../data/notes.js';
+import { NOTES, octaveName } from '../data/notes.js';
 import { store } from '../core/store.js';
 import { colorToggle } from '../core/controls.js';
 import { playNote, playScale } from '../core/audio.js';
@@ -31,7 +31,7 @@ export default {
             onclick: () => playNote(note.freq),
           },
             renderStaff(note, { colored }),
-            el('div', { class: 'staff-card__name' }, `${note.ru} первой октавы`),
+            el('div', { class: 'staff-card__name' }, `${note.ru} ${octaveName(note)}`),
             el('div', { class: 'staff-card__place' }, note.staffPlace),
           ))),
         el('div', { class: 'row row--center' },
