@@ -4,6 +4,7 @@
 
 import learn from './learn.js';
 import rainbow from './rainbow.js';
+import fingers from './fingers.js';
 import staffLearn from './staff-learn.js';
 import octaveLearn from './octave2.js';
 import { colorToggle } from '../core/controls.js';
@@ -149,6 +150,8 @@ export const MODULES = [
   colorToNote,
   rainbow,
   listenAndGuess,
+
+  fingers,
 
   staffLearn,
   staffToNote({ id: 'staff-to-note', group: 'Нотный стан' }),
