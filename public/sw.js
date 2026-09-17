@@ -14,7 +14,7 @@ const CACHE = 'gitar-school-v2';
 // even in sections that were never opened online. Keep in sync with js/core/piano.js.
 const PRECACHE = [
   './', './index.html', './styles.css',
-  ...['C4', 'Ds4', 'Fs4', 'A4', 'C5'].map((key) => `./audio/piano/${key}.mp3`),
+  ...['C4', 'Ds4', 'Fs4', 'A4', 'C5', 'Ds5', 'Fs5', 'A5'].map((key) => `./audio/piano/${key}.mp3`),
 ];
 
 self.addEventListener('install', (event) => {

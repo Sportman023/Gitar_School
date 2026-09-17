@@ -1,7 +1,12 @@
-// Sound is synthesised right in the browser (Web Audio), no audio files.
-// The only exception is the piano, which is made of recordings (piano.js).
-// A plucked string uses the Karplus–Strong algorithm: a short burst of noise
-// that loops on itself and slowly decays. It sounds close to a guitar.
+// Web Audio helpers: the audio context, short feedback sounds (right, wrong,
+// fanfare) and the guitar of the workshop.
+//
+// Notes are never synthesised — every note in the app sounds on the recorded
+// piano of piano.js, so a note sounds the same wherever the child meets it.
+// The only synthesised instrument left is the guitar strum of the workshop,
+// where it is the child's own guitar that sounds, not a note to learn.
+// It uses the Karplus–Strong algorithm: a short burst of noise that loops on
+// itself and slowly decays.
 
 let ctx = null;
 
@@ -15,6 +20,7 @@ export function ensureAudio() {
   return ctx;
 }
 
+/** A plucked string. Only the workshop guitar uses it — notes come from piano.js. */
 export function playNote(freq, { duration = 1.8, volume = 0.7 } = {}) {
   const ac = ensureAudio();
   if (!ac) return;
@@ -58,10 +64,6 @@ export function playNote(freq, { duration = 1.8, volume = 0.7 } = {}) {
   source.connect(filter).connect(gain).connect(ac.destination);
   source.start();
   return source;
-}
-
-export function playScale(notes, { step = 380 } = {}) {
-  notes.forEach((note, i) => setTimeout(() => playNote(note.freq, { duration: 1.2 }), i * step));
 }
 
 function blip(freq, startOffset, duration, type = 'sine', volume = 0.25) {

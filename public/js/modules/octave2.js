@@ -5,7 +5,7 @@ import { el, clear } from "../core/ui.js";
 import { renderStaff, renderStaffRow, playableMap } from "../core/staff.js";
 import { colorToggle } from "../core/controls.js";
 import { store } from "../core/store.js";
-import { playNote, playScale } from "../core/audio.js";
+import { loadPiano, playPiano, playPianoScale } from "../core/piano.js";
 import { NOTES_2, TWO_OCTAVES, octaveName } from "../data/notes.js";
 
 export default {
@@ -17,6 +17,9 @@ export default {
   group: "Вторая октава",
 
   mount(root) {
+    // start downloading the piano now, so the first tap isn't silent
+    loadPiano();
+
     const screen = el("div", { class: "screen octave2" });
     root.append(screen);
 
@@ -37,7 +40,7 @@ export default {
           "div",
           { class: "staff-row staff-row--long" },
           playableMap(renderStaffRow(TWO_OCTAVES, { colored }), (freq) =>
-            playNote(freq, { duration: 1.4 }),
+            playPiano(freq, { duration: 1.4 }),
           ),
         ),
         el(
@@ -54,7 +57,7 @@ export default {
             {
               class: "btn btn--primary",
               type: "button",
-              onclick: () => playScale(TWO_OCTAVES, { step: 340 }),
+              onclick: () => playPianoScale(TWO_OCTAVES, { step: 0.34 }),
             },
             "▶ Сыграть лесенку",
           ),
@@ -70,7 +73,7 @@ export default {
               {
                 class: "staff-card",
                 type: "button",
-                onclick: () => playNote(note.freq),
+                onclick: () => playPiano(note.freq),
               },
               renderStaff(note, { colored }),
               el(
@@ -90,7 +93,7 @@ export default {
             {
               class: "btn btn--primary",
               type: "button",
-              onclick: () => playScale(NOTES_2),
+              onclick: () => playPianoScale(NOTES_2),
             },
             "▶ Сыграть по порядку",
           ),

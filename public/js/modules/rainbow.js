@@ -1,7 +1,8 @@
 import { el, clear, shuffle, noteStyle } from '../core/ui.js';
 import { NOTES } from '../data/notes.js';
 import { store } from '../core/store.js';
-import { playNote, playFail, playFanfare } from '../core/audio.js';
+import { playFail, playFanfare } from '../core/audio.js';
+import { loadPiano, playPiano } from '../core/piano.js';
 
 export default {
   id: 'rainbow',
@@ -12,6 +13,9 @@ export default {
   group: 'Ноты и цвета',
 
   mount(root) {
+    // start downloading the piano now, so the first tap isn't silent
+    loadPiano();
+
     const screen = el('div', { class: 'screen rainbow', style: '--accent:#26A69A' });
     root.append(screen);
 
@@ -64,7 +68,7 @@ export default {
         return;
       }
 
-      playNote(note.freq);
+      playPiano(note.freq);
       store.recordAnswer(note.id, true);
       placed = [...placed, note];
       pool = pool.filter((item) => item.id !== note.id);

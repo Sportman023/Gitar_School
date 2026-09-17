@@ -3,7 +3,7 @@ import { renderStaff, renderStaffRow, playableMap } from '../core/staff.js';
 import { NOTES, octaveName } from '../data/notes.js';
 import { store } from '../core/store.js';
 import { colorToggle } from '../core/controls.js';
-import { playNote, playScale } from '../core/audio.js';
+import { loadPiano, playPiano, playPianoScale } from '../core/piano.js';
 
 export default {
   id: 'staff',
@@ -14,6 +14,9 @@ export default {
   group: 'Нотный стан',
 
   mount(root) {
+    // start downloading the piano now, so the first tap isn't silent
+    loadPiano();
+
     const screen = el('div', { class: 'screen staff-learn' });
     root.append(screen);
 
@@ -27,7 +30,7 @@ export default {
 
         el('h3', { class: 'block-title' }, 'Лесенка из семи нот'),
         el('div', { class: 'staff-row' },
-          playableMap(renderStaffRow(NOTES, { colored }), (freq) => playNote(freq, { duration: 1.4 }))),
+          playableMap(renderStaffRow(NOTES, { colored }), (freq) => playPiano(freq, { duration: 1.4 }))),
         el('p', { class: 'caption' },
           'Ноты шагают по очереди: линейка, промежуток, линейка, промежуток… '
           + 'До живёт под станом на своей добавочной линеечке, а Си добралась до третьей линейки.'),
@@ -37,14 +40,14 @@ export default {
           NOTES.map((note) => el('button', {
             class: 'staff-card',
             type: 'button',
-            onclick: () => playNote(note.freq),
+            onclick: () => playPiano(note.freq),
           },
             renderStaff(note, { colored }),
             el('div', { class: 'staff-card__name' }, `${note.ru} ${octaveName(note)}`),
             el('div', { class: 'staff-card__place' }, note.staffPlace),
           ))),
         el('div', { class: 'row row--center' },
-          el('button', { class: 'btn btn--primary', type: 'button', onclick: () => playScale(NOTES) },
+          el('button', { class: 'btn btn--primary', type: 'button', onclick: () => playPianoScale(NOTES) },
             '▶ Сыграть по порядку')),
         el('div', { class: 'memo' },
           el('div', { class: 'memo__title' }, 'Как запомнить'),
