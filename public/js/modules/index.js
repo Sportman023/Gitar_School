@@ -1,6 +1,11 @@
 // Registry of the app's sections.
-// To add a topic, create a module with
-// { id, title, subtitle, emoji, accent, group, mount(root) } and list it here.
+//
+// The menu has two levels: the home screen shows the topics of GROUPS, and
+// tapping one opens the sections of that topic. To add a section, create a
+// module with { id, title, subtitle, emoji, accent, group, mount(root) } and
+// list it in MODULES; `group` is the id of a topic below. A section that only
+// explains something, without a game, also sets kind: 'learn' — then the menu
+// shows a tag instead of a score.
 
 import learn from './learn.js';
 import rainbow from './rainbow.js';
@@ -14,6 +19,40 @@ import { createQuiz } from '../core/quiz.js';
 import { el, noteBubble, colorBubble, noteStyle, sample } from '../core/ui.js';
 import { playPiano } from '../core/piano.js';
 import { NOTE_BY_ID, NOTES_2, TWO_OCTAVES, octaveName } from '../data/notes.js';
+
+// Topics of the home screen, in the order they are taught at school.
+// A new topic goes to the end of the list, so what is being learned now
+// is always the last tile.
+export const GROUPS = [
+  {
+    id: 'colors',
+    title: 'Ноты и цвета',
+    subtitle: 'Семь нот — семь цветов радуги',
+    emoji: '🎨',
+    accent: '#FF7043',
+  },
+  {
+    id: 'hands',
+    title: 'Пальцы',
+    subtitle: 'Как зовут пальцы левой и правой руки',
+    emoji: '🖐️',
+    accent: '#00ACC1',
+  },
+  {
+    id: 'staff-1',
+    title: 'Нотный стан',
+    subtitle: 'Первая октава: от До до Си',
+    emoji: '🎼',
+    accent: '#5C6BC0',
+  },
+  {
+    id: 'staff-2',
+    title: 'Вторая октава',
+    subtitle: 'Те же ноты, только выше',
+    emoji: '🎶',
+    accent: '#AB47BC',
+  },
+];
 
 // Play a reference C first, then the hidden note: the child compares
 // pitches instead of needing perfect pitch. Both are piano keys of the
@@ -29,7 +68,7 @@ const noteToColor = createQuiz({
   subtitle: 'Показываем ноту, выбираешь цвет',
   emoji: '🖍️',
   accent: '#7E57C2',
-  group: 'Ноты и цвета',
+  group: 'colors',
   optionsClass: 'options options--colors',
   renderPrompt: (note) => el('div', { class: 'prompt' },
     el('div', { class: 'prompt__label' }, 'Какого цвета нота'),
@@ -45,7 +84,7 @@ const colorToNote = createQuiz({
   subtitle: 'Показываем цвет, выбираешь ноту',
   emoji: '🎵',
   accent: '#EC407A',
-  group: 'Ноты и цвета',
+  group: 'colors',
   optionsClass: 'options options--names',
   renderPrompt: (note) => el('div', { class: 'prompt' },
     el('div', { class: 'prompt__label' }, 'Какая нота этого цвета?'),
@@ -60,7 +99,7 @@ const listenAndGuess = createQuiz({
   subtitle: 'Фортепиано, первая октава',
   emoji: '👂',
   accent: '#FFA726',
-  group: 'Ноты и цвета',
+  group: 'colors',
   onAsk: playWithReference,
   optionsClass: 'options options--names',
   renderPrompt: (note) => el('div', { class: 'prompt' },
@@ -120,7 +159,7 @@ const noteToStaff = (config) => createQuiz({
   ...config,
 });
 
-const SECOND = { group: 'Вторая октава', notes: NOTES_2 };
+const SECOND = { group: 'staff-2', notes: NOTES_2 };
 
 // Both octaves mixed. Colour only hints the name: C4 and C5 share a colour.
 // That's why the options always include the same note from the other octave —
@@ -131,7 +170,7 @@ const whichOctave = staffToNote({
   subtitle: 'Читаем ноты двух октав вперемешку',
   emoji: '🪜',
   accent: '#F4511E',
-  group: 'Вторая октава',
+  group: 'staff-2',
   notes: TWO_OCTAVES,
   renderOption: (note) => el('span', { class: 'option__stack' },
     el('span', { class: 'option__name' }, note.ru),
@@ -154,8 +193,8 @@ export const MODULES = [
   fingers,
 
   staffLearn,
-  staffToNote({ id: 'staff-to-note', group: 'Нотный стан' }),
-  noteToStaff({ id: 'note-to-staff', group: 'Нотный стан' }),
+  staffToNote({ id: 'staff-to-note', group: 'staff-1' }),
+  noteToStaff({ id: 'note-to-staff', group: 'staff-1' }),
 
   octaveLearn,
   staffToNote({ id: 'staff2-to-note', ...SECOND }),

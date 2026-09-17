@@ -135,13 +135,19 @@ main {
 
 .rainbow-strip__item {
   flex: 1;
-  padding: 10px 2px;
+  padding: 12px 2px;
+  border: 0;
   text-align: center;
+  font-family: inherit;
   font-size: 13px;
   font-weight: 800;
   background: var(--note-color);
   color: var(--note-ink);
+  cursor: pointer;
+  transition: transform .12s ease;
 }
+
+.rainbow-strip__item:active { transform: scale(.92); }
 
 /* ---------- Main menu ---------- */
 
@@ -179,7 +185,22 @@ main {
 
 .menu-card__title { font-size: 18px; font-weight: 800; }
 .menu-card__sub { font-size: 14px; color: var(--muted); margin-top: 2px; }
-.menu-card__best { font-size: 12px; color: var(--accent); margin-top: 6px; font-weight: 700; }
+
+/* "Учим" / "Ещё не играли" — the accent darkened, so a light accent stays readable */
+.tag {
+  display: inline-block;
+  justify-self: start;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 16%, white);
+  color: color-mix(in srgb, var(--accent) 50%, var(--ink));
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.stars { margin-top: 6px; font-size: 15px; line-height: 1; letter-spacing: 2px; }
+.stars__one--off { opacity: .3; filter: grayscale(1); }
 
 .link-btn {
   display: block;
@@ -632,28 +653,67 @@ main {
   .options--staves { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* ---------- Menu groups ---------- */
+/* ---------- Topics on the home screen ---------- */
 
-.group { margin-bottom: 26px; }
-
-.group__title {
-  margin: 0 0 10px;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, .45);
+.topics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  gap: 12px;
 }
+
+.topic-card {
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: var(--shadow);
+  transition: transform .12s ease;
+}
+
+.topic-card:active { transform: scale(.97); }
+
+.topic-card__emoji {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 8px;
+  font-size: 32px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--accent) 18%, white);
+}
+
+.topic-card__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.topic-card__sub { font-size: 13px; line-height: 1.35; color: var(--muted); }
+
+/* one dot per game of the topic; the dark-background colours need flipping */
+.topic-card__dots { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.topic-card__dots .dot { background: rgba(29, 23, 52, .14); }
+.topic-card__dots .dot--done { background: #FFB300; }
+.topic-card__dots .dot--perfect { box-shadow: 0 0 0 3px rgba(255, 179, 0, .3); }
 
 /* ---------- Second octave ---------- */
 
 .block-title {
   margin: 30px 0 10px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, .45);
+  color: rgba(255, 255, 255, .66);
 }
 
 .caption {
@@ -849,6 +909,9 @@ main {
 }
 
 .avatar-btn:active { transform: scale(.92); }
+
+.form-links { display: grid; justify-items: center; gap: 2px; margin-top: 22px; }
+.form-links .link-btn { margin: 0; }
 .avatar-btn--on { border-color: #ffd54f; background: rgba(255, 213, 79, .2); }
 
 /* ---------- Guitar picture ---------- */

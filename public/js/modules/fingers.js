@@ -44,7 +44,8 @@ export default {
   subtitle: 'Левая рука — цифры, правая — буквы p, i, m, a',
   emoji: '🖐️',
   accent: ACCENT,
-  group: 'Пальцы',
+  group: 'hands',
+  kind: 'learn',
 
   mount(root) {
     root.append(el('div', { class: 'screen fingers', style: `--accent:${ACCENT}` },

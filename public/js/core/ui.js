@@ -78,3 +78,8 @@ export function mount(parent, ...children) {
     parent.append(child);
   }
 }
+
+/** Where "back to the menu" leads: the section's topic screen, or the home screen. */
+export function topicHref(group) {
+  return group ? `#t/${group}` : '#';
+}

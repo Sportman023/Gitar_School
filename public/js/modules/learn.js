@@ -8,7 +8,8 @@ export default {
   subtitle: 'Карточки: нота, цвет и звук',
   emoji: '🎨',
   accent: '#FF7043',
-  group: 'Ноты и цвета',
+  group: 'colors',
+  kind: 'learn',
 
   mount(root) {
     // start downloading the piano now, so the first tap isn't silent

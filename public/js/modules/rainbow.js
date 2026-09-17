@@ -1,8 +1,10 @@
-import { el, clear, shuffle, noteStyle } from '../core/ui.js';
+import { el, clear, shuffle, noteStyle, topicHref } from '../core/ui.js';
 import { NOTES } from '../data/notes.js';
 import { store } from '../core/store.js';
 import { playFail, playFanfare } from '../core/audio.js';
 import { loadPiano, playPiano } from '../core/piano.js';
+
+const GROUP = 'colors';
 
 export default {
   id: 'rainbow',
@@ -10,7 +12,7 @@ export default {
   subtitle: 'Расставь ноты по порядку',
   emoji: '🌈',
   accent: '#26A69A',
-  group: 'Ноты и цвета',
+  group: GROUP,
 
   mount(root) {
     // start downloading the piano now, so the first tap isn't silent
@@ -51,7 +53,7 @@ export default {
             el('div', { class: 'result__score' }, mistakes === 0 ? 'Без единой ошибки!' : `Готово! Ошибок: ${mistakes}`),
             el('div', { class: 'row' },
               el('button', { class: 'btn btn--primary', type: 'button', onclick: restart }, 'Ещё раз'),
-              el('a', { class: 'btn', href: '#' }, 'В меню'),
+              el('a', { class: 'btn', href: topicHref(GROUP) }, 'В меню'),
             ))
           : el('div', { class: 'chips' }, chips),
       );

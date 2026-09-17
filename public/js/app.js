@@ -1,9 +1,10 @@
-import { MODULES } from './modules/index.js';
+import { MODULES, GROUPS } from './modules/index.js';
 import { store } from './core/store.js';
-import { el, clear, noteStyle, mount } from './core/ui.js';
+import { el, clear, noteStyle, mount, topicHref } from './core/ui.js';
 import { NOTES } from './data/notes.js';
 import { ITEMS, nextUnlock, isUnlocked } from './data/guitar.js';
 import { ensureAudio, playFanfare } from './core/audio.js';
+import { loadPiano, playPiano } from './core/piano.js';
 import { renderGuitar } from './core/guitar.js';
 import { mountPlayers } from './screens/players.js';
 import workshop, { itemPreview, itemTitle } from './screens/workshop.js';
@@ -18,6 +19,11 @@ const playerBtn = document.getElementById('playerBtn');
 const SCREENS = [workshop];
 
 let cleanup = null;
+// where the back arrow leads from the screen on display
+let parentRoute = '';
+// how far each menu screen was scrolled, so it comes back the way it was left
+const scrollMemory = new Map();
+let currentRoute = location.hash;
 
 store.subscribe((state) => {
   const player = store.player;
@@ -32,15 +38,30 @@ store.subscribe((state) => {
   }
 });
 
-function renderRainbowStrip() {
-  return el('div', { class: 'rainbow-strip' },
-    NOTES.map((note) => el('div', { class: 'rainbow-strip__item', style: noteStyle(note) }, note.ru)));
+/** Topics with their sections; anything whose group is unknown goes last. */
+function topics() {
+  const list = GROUPS.map((group) => ({ ...group, items: [] }));
+  for (const module of MODULES) {
+    const id = module.group || 'other';
+    let topic = list.find((item) => item.id === id);
+    if (!topic) list.push((topic = { id, title: 'Разное', subtitle: 'Новая тема', emoji: '🎵', items: [] }));
+    topic.items.push(module);
+  }
+  return list.filter((topic) => topic.items.length);
 }
 
-function bestLabel(module) {
-  const best = store.moduleBest(module.id);
-  if (!best || !best.rounds) return 'Ещё не играли';
-  return `Лучший результат: ${best.best}${best.total ? ` из ${best.total}` : ''}`;
+// ---------- Home screen ----------
+
+/** The rainbow of notes, each one playable: a reminder that is also a toy. */
+function renderRainbowStrip() {
+  return el('div', { class: 'rainbow-strip' },
+    NOTES.map((note) => el('button', {
+      class: 'rainbow-strip__item',
+      type: 'button',
+      style: noteStyle(note),
+      'aria-label': `Послушать ноту ${note.ru}`,
+      onclick: () => playPiano(note.freq),
+    }, note.ru)));
 }
 
 /** "My guitar" card on the home screen: the guitar and how far the next unlock is. */
@@ -74,51 +95,115 @@ function renderGuitarCard() {
       el('div', { class: 'guitar-card__cta' }, 'Украсить гитару →')));
 }
 
+const isPlayed = (module) => {
+  const best = store.moduleBest(module.id);
+  return Boolean(best && best.rounds);
+};
+
+/** One dot per game of a topic: filled once played, ringed for a perfect round. */
+function renderTopicDots(games) {
+  const played = games.filter(isPlayed).length;
+  return el('div', {
+    class: 'topic-card__dots',
+    'aria-label': `Сыграно ${played} из ${games.length}`,
+    title: `Сыграно ${played} из ${games.length}`,
+  }, games.map((module) => {
+    const best = store.moduleBest(module.id);
+    const done = isPlayed(module);
+    const perfect = done && best.total && best.best >= best.total;
+    return el('span', { class: `dot ${done ? 'dot--done' : ''} ${perfect ? 'dot--perfect' : ''}` });
+  }));
+}
+
+/** A topic tile: emoji, name and how the games inside are going. */
+function renderTopicCard(topic) {
+  const games = topic.items.filter((module) => module.kind !== 'learn');
+  const seen = store.setting('topicsSeen', {});
+  // a brand new player has seen nothing yet — there the badge would be on everything
+  const isNew = store.state.stars > 0 && !seen[topic.id];
+
+  return el('a', {
+    class: 'topic-card',
+    href: topicHref(topic.id),
+    style: `--accent:${topic.accent || '#7E57C2'}`,
+  },
+    el('div', { class: 'topic-card__emoji' }, topic.emoji),
+    el('div', { class: 'topic-card__title' },
+      topic.title,
+      isNew ? el('span', { class: 'badge' }, 'Новое!') : null),
+    el('div', { class: 'topic-card__sub' }, topic.subtitle),
+    games.length ? renderTopicDots(games) : el('div', { class: 'tag' }, 'Подсказка'),
+  );
+}
+
 function renderHome() {
   titleEl.textContent = 'Гитарная школа';
   backBtn.hidden = true;
+  // the rainbow strip sounds on the very first tap
+  loadPiano();
 
-  // sections are grouped by topic — there are many of them already
-  const groups = [];
-  for (const module of MODULES) {
-    const name = module.group || 'Разное';
-    let group = groups.find((g) => g.name === name);
-    if (!group) groups.push((group = { name, items: [] }));
-    group.items.push(module);
+  // A player from before the topics existed has in fact seen them all; without
+  // this every tile would light up "Новое!" at once. The badge is for topics
+  // added later.
+  if (store.state.stars > 0 && !store.state.settings.topicsSeen) {
+    store.setSetting('topicsSeen', Object.fromEntries(topics().map((topic) => [topic.id, true])));
   }
 
-  const player = store.player;
-
   mount(appEl,
-    el('p', { class: 'hello' }, `Привет, ${player.name}! Выбери, чем сегодня займёмся 🎸`),
+    el('p', { class: 'hello' }, `Привет, ${store.player.name}! Выбери, чем сегодня займёмся 🎸`),
     renderGuitarCard(),
     renderRainbowStrip(),
-    groups.map((group) => el('section', { class: 'group' },
-      el('h2', { class: 'group__title' }, group.name),
-      el('div', { class: 'menu' },
-        group.items.map((module) => el('a', {
-          class: 'menu-card',
-          href: `#${module.id}`,
-          style: `--accent:${module.accent}`,
-        },
-          el('div', { class: 'menu-card__emoji' }, module.emoji),
-          el('div', { class: 'menu-card__text' },
-            el('div', { class: 'menu-card__title' }, module.title),
-            el('div', { class: 'menu-card__sub' }, module.subtitle),
-            el('div', { class: 'menu-card__best' }, bestLabel(module))),
-        ))))),
-    el('button', {
-      class: 'link-btn',
-      type: 'button',
-      onclick: () => {
-        if (confirm(`Обнулить звёзды, результаты и гитару игрока «${player.name}»?`)) {
-          store.reset();
-          navigate();
-        }
-      },
-    }, 'Сбросить прогресс'),
+    el('div', { class: 'topics' }, topics().map(renderTopicCard)),
   );
 }
+
+// ---------- One topic ----------
+
+/** How a section has gone: stars for a game, a tag for a reference one. */
+function renderResult(module) {
+  if (module.kind === 'learn') return el('div', { class: 'tag' }, 'Учим');
+  const best = store.moduleBest(module.id);
+  if (!best || !best.rounds) return el('div', { class: 'tag' }, 'Ещё не играли');
+
+  // one star for playing, two for a good round, three for a perfect one —
+  // the same thresholds the result screen praises with
+  const total = best.total || 0;
+  const count = total && best.best >= total ? 3 : total && best.best >= total * 0.7 ? 2 : 1;
+  const label = total ? `Лучший результат: ${best.best} из ${total}` : `Лучший результат: ${best.best}`;
+
+  return el('div', { class: 'stars', 'aria-label': label, title: label },
+    [1, 2, 3].map((i) => el('span', { class: `stars__one ${i <= count ? '' : 'stars__one--off'}` }, '⭐')));
+}
+
+function renderMenuCard(module) {
+  return el('a', {
+    class: 'menu-card',
+    href: `#${module.id}`,
+    style: `--accent:${module.accent}`,
+  },
+    el('div', { class: 'menu-card__emoji' }, module.emoji),
+    el('div', { class: 'menu-card__text' },
+      el('div', { class: 'menu-card__title' }, module.title),
+      el('div', { class: 'menu-card__sub' }, module.subtitle),
+      renderResult(module)),
+  );
+}
+
+function renderTopic(topic) {
+  titleEl.textContent = topic.title;
+  backBtn.hidden = false;
+  parentRoute = '';
+
+  const seen = store.setting('topicsSeen', {});
+  if (!seen[topic.id]) store.setSetting('topicsSeen', { ...seen, [topic.id]: true });
+
+  mount(appEl,
+    el('p', { class: 'lead' }, topic.subtitle),
+    el('div', { class: 'menu' }, topic.items.map(renderMenuCard)),
+  );
+}
+
+// ---------- Routing ----------
 
 function renderPlayers() {
   titleEl.textContent = 'Гитарная школа';
@@ -126,29 +211,58 @@ function renderPlayers() {
   mountPlayers(appEl, { onPick: goHome });
 }
 
-function goHome() {
-  if (location.hash) location.hash = '';
-  else navigate();
+function renderSection(screen) {
+  titleEl.textContent = screen.title;
+  backBtn.hidden = false;
+  parentRoute = screen.group ? `t/${screen.group}` : '';
+  cleanup = screen.mount(appEl) || null;
 }
+
+/** Draws whatever the address points at; returns the route it settled on. */
+function render() {
+  if (!store.player) {
+    renderPlayers();
+    return '#players';
+  }
+
+  const hash = location.hash.replace(/^#/, '');
+  if (hash.startsWith('t/')) {
+    const topic = topics().find((item) => item.id === hash.slice(2));
+    if (topic) {
+      renderTopic(topic);
+      return topicHref(topic.id);
+    }
+  } else {
+    const screen = MODULES.find((m) => m.id === hash) || SCREENS.find((s) => s.id === hash);
+    if (screen) {
+      renderSection(screen);
+      return `#${screen.id}`;
+    }
+  }
+
+  renderHome();
+  return '#';
+}
+
+const isMenuRoute = (route) => route === '#' || route.startsWith('#t/');
 
 function navigate() {
   if (cleanup) {
     cleanup();
     cleanup = null;
   }
+  scrollMemory.set(currentRoute, window.scrollY);
   clear(appEl);
-  window.scrollTo(0, 0);
+  parentRoute = '';
 
-  if (!store.player) return renderPlayers();
+  currentRoute = render();
+  // a menu comes back where the child left it; a section always starts at the top
+  window.scrollTo(0, isMenuRoute(currentRoute) ? scrollMemory.get(currentRoute) || 0 : 0);
+}
 
-  const id = location.hash.replace(/^#/, '');
-  const screen = MODULES.find((m) => m.id === id) || SCREENS.find((s) => s.id === id);
-
-  if (!screen) return renderHome();
-
-  titleEl.textContent = screen.title;
-  backBtn.hidden = false;
-  cleanup = screen.mount(appEl) || null;
+function goHome() {
+  if (location.hash) location.hash = '';
+  else navigate();
 }
 
 // ---------- Celebrating unlocks ----------
@@ -199,7 +313,7 @@ store.onUnlock((items) => setTimeout(() => showUnlock(items), 1100));
 // ---------- Start ----------
 
 backBtn.addEventListener('click', () => {
-  location.hash = '';
+  location.hash = parentRoute;
 });
 
 playerBtn.addEventListener('click', () => {

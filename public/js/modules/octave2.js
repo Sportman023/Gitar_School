@@ -14,7 +14,8 @@ export default {
   subtitle: "До, Ре, Ми, Фа, Соль на нотном стане",
   emoji: "🎶",
   accent: "#AB47BC",
-  group: "Вторая октава",
+  group: "staff-2",
+  kind: "learn",
 
   mount(root) {
     // start downloading the piano now, so the first tap isn't silent

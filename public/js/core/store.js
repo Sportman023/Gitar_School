@@ -236,4 +236,13 @@ export const store = {
     state = emptyProgress();
     commit();
   },
+
+  /** The same for any player — from the "edit player" form, where parents are. */
+  resetPlayer(id) {
+    if (id === currentId) return this.reset();
+    if (!root.profiles.some((profile) => profile.id === id)) return;
+    root.progress[id] = emptyProgress();
+    saveRoot();
+    emit();
+  },
 };

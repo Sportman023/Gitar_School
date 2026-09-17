@@ -117,16 +117,28 @@ export function mountPlayers(root, { onPick }) {
         el('div', { class: 'row row--center' },
           done,
           firstRun ? null : el('button', { class: 'btn', type: 'button', onclick: renderList }, 'Отмена')),
-        player ? el('button', {
-          class: 'link-btn',
-          type: 'button',
-          onclick: () => {
-            if (confirm(`Удалить игрока «${player.name}» вместе со всеми звёздами и гитарой?`)) {
-              store.removePlayer(player.id);
-              renderList();
-            }
-          },
-        }, 'Удалить игрока') : null,
+        // grown-up actions live here, away from the main screen
+        player ? el('div', { class: 'form-links' },
+          el('button', {
+            class: 'link-btn',
+            type: 'button',
+            onclick: () => {
+              if (confirm(`Обнулить звёзды, результаты и гитару игрока «${player.name}»? Сам игрок останется.`)) {
+                store.resetPlayer(player.id);
+                renderList();
+              }
+            },
+          }, 'Сбросить прогресс'),
+          el('button', {
+            class: 'link-btn',
+            type: 'button',
+            onclick: () => {
+              if (confirm(`Удалить игрока «${player.name}» вместе со всеми звёздами и гитарой?`)) {
+                store.removePlayer(player.id);
+                renderList();
+              }
+            },
+          }, 'Удалить игрока')) : null,
       ),
     );
 

@@ -11,7 +11,8 @@ export default {
   subtitle: 'Первая октава: где живёт каждая нота',
   emoji: '🎼',
   accent: '#5C6BC0',
-  group: 'Нотный стан',
+  group: 'staff-1',
+  kind: 'learn',
 
   mount(root) {
     // start downloading the piano now, so the first tap isn't silent

@@ -2,7 +2,7 @@
 // answers. What the question and the answers look like is up to each
 // module (see js/modules/index.js).
 
-import { el, clear, shuffle, sample, delay, mount } from './ui.js';
+import { el, clear, shuffle, sample, delay, mount, topicHref } from './ui.js';
 import { NOTES } from '../data/notes.js';
 import { store } from './store.js';
 import { playSuccess, playFail, playFanfare } from './audio.js';
@@ -52,6 +52,10 @@ export function createQuiz(config) {
       let score = 0;
       let locked = false;
       let cancelled = false;
+      // answers of the current question. They are kept, so that redrawing the
+      // screen (the "coloured notes" toggle) neither reshuffles them nor
+      // replays the sound — the question stays exactly the same one.
+      let options = null;
 
       const screen = el('div', { class: 'screen quiz', style: `--accent:${accent}` });
       root.append(screen);
@@ -71,29 +75,34 @@ export function createQuiz(config) {
         if (index >= queue.length) return renderResult();
 
         const note = queue[index];
-        const others = pickOthers(note, notes, optionsCount - 1);
-        const options = shuffle([note, ...others]);
+        const fresh = !options;
+        if (fresh) options = shuffle([note, ...pickOthers(note, notes, optionsCount - 1)]);
         const feedback = el('div', { class: 'feedback' }, ' ');
 
         const optionNodes = options.map((option) =>
           el('button', {
             class: 'option',
             type: 'button',
-            onclick: () => answer(option, note, optionNodes, options, feedback),
+            onclick: () => answer(option, note, optionNodes, feedback),
           }, renderOption(option)));
 
         mount(screen,
           renderProgress(),
-          renderControls ? renderControls(renderQuestion) : null,
+          renderControls ? renderControls(redraw) : null,
           el('div', { class: 'question' }, renderPrompt(note)),
           feedback,
           el('div', { class: optionsClass }, optionNodes),
         );
 
-        if (onAsk) onAsk(note);
+        if (fresh && onAsk) onAsk(note);
       }
 
-      async function answer(picked, correctNote, optionNodes, options, feedback) {
+      /** Redraws the current question — for controls such as the colour toggle. */
+      function redraw() {
+        if (!locked) renderQuestion();
+      }
+
+      async function answer(picked, correctNote, optionNodes, feedback) {
         if (locked) return;
         locked = true;
 
@@ -120,6 +129,7 @@ export function createQuiz(config) {
         await delay(isCorrect ? 850 : 1600);
         if (cancelled) return;
         index += 1;
+        options = null;
         locked = false;
         renderQuestion();
       }
@@ -150,11 +160,12 @@ export function createQuiz(config) {
                   queue = buildQueue(notes, questions);
                   index = 0;
                   score = 0;
+                  options = null;
                   locked = false;
                   renderQuestion();
                 },
               }, 'Ещё раз'),
-              el('a', { class: 'btn', href: '#' }, 'В меню'),
+              el('a', { class: 'btn', href: topicHref(group) }, 'В меню'),
             ),
           ),
         );
