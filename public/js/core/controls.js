@@ -2,7 +2,7 @@ import { el } from './ui.js';
 import { store } from './store.js';
 
 /**
- * The "coloured notes" toggle shared by the staff and fretboard sections.
+ * The "coloured notes" toggle shared by the staff sections.
  * Colour is scaffolding: first lean on the rainbow colours the child already
  * knows, then switch it off and read plain black notes.
  */

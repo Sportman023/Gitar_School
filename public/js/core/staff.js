@@ -111,7 +111,7 @@ export function renderStaff(note, { colored = true, extraClass = '' } = {}) {
 /**
  * A long staff with notes in a row, left to right. Notes of the same octave
  * get a labelled bracket underneath. Every note carries data-freq so it can
- * be played on tap (see playableMap in fretboard.js).
+ * be played on tap (see playableMap).
  */
 export function renderStaffRow(notes, { colored = true, extraClass = '' } = {}) {
   const xAt = (i) => ROW_FIRST_X + i * ROW_STEP;
@@ -147,4 +147,13 @@ export function renderStaffRow(notes, { colored = true, extraClass = '' } = {}) 
     role: 'img',
     'aria-label': 'Ноты подряд на нотном стане',
   }, ...parts);
+}
+
+/** Tap a note in the row to hear it. One listener for the whole picture. */
+export function playableMap(svg, play) {
+  svg.addEventListener('click', (event) => {
+    const note = event.target.closest('[data-freq]');
+    if (note) play(Number(note.dataset.freq));
+  });
+  return svg;
 }

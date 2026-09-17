@@ -5,12 +5,9 @@
 import learn from './learn.js';
 import rainbow from './rainbow.js';
 import staffLearn from './staff-learn.js';
-import fretLearn from './fretboard-learn.js';
-import stringsLearn from './strings.js';
 import octaveLearn from './octave2.js';
 import { colorToggle } from '../core/controls.js';
 import { renderStaff } from '../core/staff.js';
-import { renderFretboard } from '../core/fretboard.js';
 import { store } from '../core/store.js';
 import { createQuiz } from '../core/quiz.js';
 import { el, noteBubble, colorBubble, noteStyle, sample } from '../core/ui.js';
@@ -86,8 +83,8 @@ function namePrompt(label, note) {
   );
 }
 
-// Staff and fretboard games are the same for both octaves, so these are
-// factories: config adds the id, the group and the notes (first octave by default).
+// Staff games are the same for both octaves, so these are factories:
+// config adds the id, the group and the notes (first octave by default).
 
 // Reading notes on the staff. Note heads follow the shared "coloured notes"
 // setting: colour is a hint here (red head → C), and the answers are words,
@@ -119,36 +116,6 @@ const noteToStaff = (config) => createQuiz({
   renderPrompt: (note) => namePrompt('Где на стане живёт нота', note),
   renderOption: (note) => el('div', { class: 'prompt__paper prompt__paper--small' },
     renderStaff(note, { colored: false })),
-  ...config,
-});
-
-// The fretboard works like the staff: colour hints in one direction, and
-// in the reverse task the dots are always black so colour can't give the answer away.
-const fretToNote = (config) => createQuiz({
-  title: 'Читаем гриф',
-  subtitle: 'Позиция на грифе → название',
-  emoji: '🔎',
-  accent: '#8D6E63',
-  optionsClass: 'options options--names',
-  renderControls: (refresh) => colorToggle(refresh),
-  renderPrompt: (note) => el('div', { class: 'prompt' },
-    el('div', { class: 'prompt__label' }, 'Какая это нота?'),
-    el('div', { class: 'prompt__wood' },
-      renderFretboard(note, { colored: store.setting('coloredHeads', true) })),
-  ),
-  renderOption: (note) => el('span', { class: 'option__name' }, note.ru),
-  ...config,
-});
-
-const noteToFret = (config) => createQuiz({
-  title: 'Находим на грифе',
-  subtitle: 'Название → где прижать струну',
-  emoji: '👆',
-  accent: '#6D4C41',
-  optionsClass: 'options options--boards',
-  renderPrompt: (note) => namePrompt('Где на гитаре взять ноту', note),
-  renderOption: (note) => el('div', { class: 'prompt__wood prompt__wood--small' },
-    renderFretboard(note, { colored: false })),
   ...config,
 });
 
@@ -187,15 +154,8 @@ export const MODULES = [
   staffToNote({ id: 'staff-to-note', group: 'Нотный стан' }),
   noteToStaff({ id: 'note-to-staff', group: 'Нотный стан' }),
 
-  stringsLearn,
-  fretLearn,
-  fretToNote({ id: 'fret-to-note', group: 'Гриф гитары' }),
-  noteToFret({ id: 'note-to-fret', group: 'Гриф гитары' }),
-
   octaveLearn,
   staffToNote({ id: 'staff2-to-note', ...SECOND }),
   noteToStaff({ id: 'note-to-staff2', ...SECOND }),
-  fretToNote({ id: 'fret2-to-note', ...SECOND }),
-  noteToFret({ id: 'note-to-fret2', ...SECOND }),
   whichOctave,
 ];
