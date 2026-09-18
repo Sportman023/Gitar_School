@@ -14,9 +14,14 @@ export function ensureAudio() {
   if (!ctx) {
     const Ctor = window.AudioContext || window.webkitAudioContext;
     if (!Ctor) return null;
+    // iOS treats Web Audio as background sound and mutes it with the silent
+    // switch; 'playback' makes it sound like a music app (Safari 16.4+).
+    if (navigator.audioSession) navigator.audioSession.type = 'playback';
     ctx = new Ctor();
   }
-  if (ctx.state === 'suspended') ctx.resume();
+  // iOS also leaves the context 'interrupted' after a call or a trip to
+  // another app
+  if (ctx.state !== 'running') ctx.resume();
   return ctx;
 }
 
