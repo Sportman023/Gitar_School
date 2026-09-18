@@ -64,7 +64,7 @@ export default {
         renderHand('right', { labels: allLabels(RIGHT), label: 'Правая рука: пальцы p, i, m, a' })),
       el('p', { class: 'caption' },
         'p, i, m, a — первые буквы испанских названий пальцев. '
-        + 'Мизинец правой руки обычно не играет, поэтому буквы у него нет.'),
+        + 'У мизинца обозначение e, но он обычно не играет.'),
       fingerCards('right', RIGHT),
 
       el('div', { class: 'memo' },
