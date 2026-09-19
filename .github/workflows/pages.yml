@@ -32,6 +32,14 @@ jobs:
           fetch-depth: 0
       - name: Assemble the site
         run: |
+          # Pages keeps one deployment per commit and silently skips a commit it
+          # has deployed before. If main and beta point to the same commit, one of
+          # them was fast-forwarded onto an already deployed commit, and the site
+          # would not change. Merges between the branches must use --no-ff.
+          if [ "$(git rev-parse origin/main)" = "$(git rev-parse -q --verify origin/beta)" ]; then
+            echo "::error::main and beta point to the same commit, GitHub Pages would skip this deploy. Merge with --no-ff."
+            exit 1
+          fi
           mkdir -p _site
           cp -R public/. _site/
           if git rev-parse --verify -q origin/beta >/dev/null; then
