@@ -1,8 +1,9 @@
-// "Second octave" section: cards for C5–G5 showing where each note is on
-// the staff. How it continues the first octave is shown in the octave ladder.
+// "Second octave" section: a ladder of C5–G5 and cards showing where each
+// note is on the staff. How it continues the first octave is shown in the
+// octave ladder.
 
 import { el, clear } from "../core/ui.js";
-import { renderStaff } from "../core/staff.js";
+import { renderStaff, renderStaffRow, playableMap } from "../core/staff.js";
 import { colorToggle } from "../core/controls.js";
 import { store } from "../core/store.js";
 import { loadPiano, playPiano, playPianoScale } from "../core/piano.js";
@@ -35,6 +36,21 @@ export default {
           "После Си 1 октавы ноты начинаются заново — это вторая октава. Нажми на нотку, чтобы её услышать.",
         ),
         colorToggle(render),
+
+        el("h3", { class: "block-title" }, "Лесенка из пяти нот"),
+        el(
+          "div",
+          { class: "staff-row" },
+          playableMap(renderStaffRow(NOTES_2, { colored }), (freq) =>
+            playPiano(freq, { duration: 1.4 }),
+          ),
+        ),
+        el(
+          "p",
+          { class: "caption" },
+          "Ноты шагают по очереди: линейка, промежуток, линейка, промежуток… " +
+            "До 2 октавы живёт между 3-й и 4-й линейками, а Соль забралась над пятой линейкой.",
+        ),
 
         el("h3", { class: "block-title" }, "Где живёт каждая нота"),
         el(
