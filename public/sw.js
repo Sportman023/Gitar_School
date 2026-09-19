@@ -8,7 +8,15 @@
 // the page would still get old files. That's why every request asks the server
 // whether a file changed (cache: 'no-cache'), and answers are marked no-cache
 // too, so the page doesn't reuse them from memory on reload.
-const CACHE = 'gitar-school-v2';
+//
+// The beta copy of the app lives in the beta/ subfolder of the same site, so
+// both copies share one origin and one list of caches. Each copy keeps its own
+// cache and only ever deletes its own old ones; the main copy also leaves the
+// beta/ subfolder alone, which the beta's own service worker looks after.
+const IS_BETA = self.location.pathname.includes('/beta/');
+const PREFIX = IS_BETA ? 'gitar-school-beta-v' : 'gitar-school-v';
+const CACHE = `${PREFIX}2`;
+const BETA_URL = new URL('beta/', self.location).href;
 
 // The piano recordings are cached up front, so the piano works offline
 // even in sections that were never opened online. Keep in sync with js/core/piano.js.
@@ -24,7 +32,7 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k.startsWith(PREFIX)).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -39,6 +47,7 @@ function noReuse(response) {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET' || !request.url.startsWith(self.location.origin)) return;
+  if (!IS_BETA && request.url.startsWith(BETA_URL)) return;
 
   event.respondWith(
     fetch(request, { cache: 'no-cache' })

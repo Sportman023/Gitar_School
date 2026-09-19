@@ -104,6 +104,25 @@ body {
   white-space: nowrap;
 }
 
+/* The beta copy of the app (beta/ subfolder) wears a badge at the bottom of the screen. */
+body.is-beta::after {
+  content: "БЕТА";
+  position: fixed;
+  left: 50%;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  z-index: 100;
+  transform: translateX(-50%);
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: #ff7043;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  pointer-events: none;
+  opacity: .9;
+}
+
 main {
   padding: 18px 16px calc(32px + env(safe-area-inset-bottom));
   max-width: 860px;

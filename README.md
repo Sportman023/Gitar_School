@@ -35,6 +35,23 @@ PORT=8080 npm start
 Публикация на GitHub Pages происходит сама: после `git push` в ветку `main`
 GitHub Actions выкладывает папку `public/` (см. `.github/workflows/pages.yml`).
 
+## Бета-версия
+
+Чтобы учитель могла проверить изменения до того, как их получат дети, ветка
+`beta` публикуется в подпапку того же сайта:
+**https://sportman023.github.io/Gitar_School/beta/**
+
+```bash
+git checkout beta && git push          # новая версия появится в /beta/ через минуту
+git checkout main && git merge --ff-only beta && git push   # учитель одобрила — выпускаем
+git checkout beta && git merge main    # после срочной правки прямо в main
+```
+
+В бете внизу экрана плашка «БЕТА», свои игроки и звёзды и свой кэш для работы
+без интернета: проверка беты на планшете ребёнка не трогает его прогресс.
+Какая копия запущена, приложение понимает по адресу (`js/core/env.js`), поэтому
+код в обеих ветках одинаковый и при выпуске ничего править не нужно.
+
 ## Что внутри
 
 **Меню.** Главный экран — это гитара игрока, радужная полоска (нажми на цвет —
@@ -199,7 +216,7 @@ export default {
 
 ```
 server.js                  мини-сервер для запуска на компьютере
-.github/workflows/pages.yml публикация public/ на GitHub Pages
+.github/workflows/pages.yml публикация на GitHub Pages: main в корень, beta в /beta/
 public/
   index.html               оболочка
   styles.css               оформление
@@ -217,6 +234,7 @@ public/
   js/core/store.js         игроки, прогресс и звёзды (localStorage)
   js/core/quiz.js          движок викторин
   js/core/ui.js            мелкие помощники для вёрстки
+  js/core/env.js           основная копия или бета (по адресу /beta/)
   js/modules/              разделы приложения
   js/screens/              экраны вне меню: выбор игрока, мастерская гитары
 tools/make-icons.mjs       генератор иконок (npm run icons)

@@ -8,6 +8,10 @@ import { loadPiano, playPiano } from './core/piano.js';
 import { renderGuitar } from './core/guitar.js';
 import { mountPlayers } from './screens/players.js';
 import workshop, { itemPreview, itemTitle } from './screens/workshop.js';
+import { IS_BETA } from './core/env.js';
+
+// a "БЕТА" badge, so the test copy is never mistaken for the real one
+document.body.classList.toggle('is-beta', IS_BETA);
 
 const appEl = document.getElementById('app');
 const titleEl = document.getElementById('title');

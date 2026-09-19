@@ -1,9 +1,12 @@
-# Publishes the app (the public/ folder) to GitHub Pages on every push to main.
+# Publishes the app to GitHub Pages on every push to main or beta.
+# The site is built from both branches: public/ of main goes to the root,
+# public/ of beta goes to the beta/ subfolder, where the teacher tries changes
+# before they are merged into main.
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, beta]
   workflow_dispatch:
 
 permissions:
@@ -22,10 +25,25 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # always main, whichever branch was pushed; full history brings origin/beta along
       - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Assemble the site
+        run: |
+          mkdir -p _site
+          cp -R public/. _site/
+          if git rev-parse --verify -q origin/beta >/dev/null; then
+            mkdir -p _site/beta
+            git archive origin/beta public | tar -x -C _site/beta --strip-components=1
+            # an installed beta must not look like the real app on the home screen
+            jq '.name += " (бета)" | .short_name += " β"' _site/beta/manifest.webmanifest > manifest.tmp
+            mv manifest.tmp _site/beta/manifest.webmanifest
+          fi
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: public
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v5

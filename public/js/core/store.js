@@ -9,9 +9,12 @@
 // keeps the current player.
 
 import { DEFAULT_GUITAR, sanitizeGuitar, unlockedBetween } from '../data/guitar.js';
+import { IS_BETA } from './env.js';
 
-const KEY = 'gitar-school-v2';
-const SESSION_KEY = 'gitar-school-player';
+// the beta keeps its own players, so trying it never touches the children's stars
+const SUFFIX = IS_BETA ? '-beta' : '';
+const KEY = `gitar-school-v2${SUFFIX}`;
+const SESSION_KEY = `gitar-school-player${SUFFIX}`;
 
 const emptyProgress = () => ({
   stars: 0,
