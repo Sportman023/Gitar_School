@@ -11,14 +11,15 @@
 import learn from './learn.js';
 import rainbow from './rainbow.js';
 import fingers from './fingers.js';
+import { fingerToMark, markToFinger } from './finger-games.js';
 import octave1 from './octave1.js';
 import octave2 from './octave2.js';
 import octaves from './octaves.js';
 import { colorToggle, octaveChips, drilledNotes } from '../core/controls.js';
 import { renderStaff } from '../core/staff.js';
 import { store } from '../core/store.js';
-import { createQuiz } from '../core/quiz.js';
-import { el, noteBubble, colorBubble, noteStyle, sample } from '../core/ui.js';
+import { createQuiz, pickWithTwin } from '../core/quiz.js';
+import { el, noteBubble, colorBubble, noteStyle } from '../core/ui.js';
 import { playPiano } from '../core/piano.js';
 import { NOTE_BY_ID, octaveName } from '../data/notes.js';
 
@@ -125,13 +126,6 @@ function namePrompt(label, note) {
 
 const isMixed = (notes) => new Set(notes.map((note) => note.octave)).size > 1;
 
-function pickWithTwin(note, pool, count) {
-  const twins = pool.filter((other) => other.pc === note.pc && other.id !== note.id);
-  if (!twins.length) return sample(pool, count, [note]);
-  const [twin] = sample(twins, 1);
-  return [twin, ...sample(pool, count - 1, [note, twin])];
-}
-
 // Reading notes on the staff. Note heads follow the shared "coloured notes"
 // setting: colour is a hint here (red head → C), and the answers are words,
 // otherwise the child could match colour to colour without reading the staff.
@@ -144,7 +138,7 @@ const staffToNote = createQuiz({
   accent: '#5C6BC0',
   group: 'staff',
   notes: drilledNotes,
-  pickOthers: pickWithTwin,
+  pickOthers: pickWithTwin('pc'),
   optionsClass: 'options options--names',
   renderControls: ({ redraw, restart }) => [octaveChips(restart), colorToggle(redraw)],
   renderPrompt: (note) => el('div', { class: 'prompt' },
@@ -172,7 +166,7 @@ const noteToStaff = createQuiz({
   accent: '#00897B',
   group: 'staff',
   notes: drilledNotes,
-  pickOthers: pickWithTwin,
+  pickOthers: pickWithTwin('pc'),
   optionsClass: 'options options--staves',
   renderControls: ({ restart }) => octaveChips(restart),
   renderPrompt: (note) => namePrompt('Где на стане живёт нота', note),
@@ -189,6 +183,8 @@ export const MODULES = [
   listenAndGuess,
 
   fingers,
+  fingerToMark,
+  markToFinger,
 
   octave1,
   octave2,

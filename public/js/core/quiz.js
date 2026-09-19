@@ -2,6 +2,12 @@
 // answers. What the question and the answers look like is up to each
 // module (see js/modules/index.js). renderPrompt, renderOption and
 // explainAnswer get the notes of the current round as a second argument.
+//
+// The quiz works the same with anything that has an `id` in place of notes,
+// e.g. the fingers of js/data/fingers.js. Instead of option buttons, a module
+// can give a picture to tap on (renderBoard): its tappable parts carry the id
+// they stand for in data-answer, and get the same option--right and
+// option--wrong classes as the buttons once the question is answered.
 
 import { el, clear, shuffle, sample, delay, mount, topicHref } from './ui.js';
 import { NOTES } from '../data/notes.js';
@@ -9,6 +15,20 @@ import { store } from './store.js';
 import { playSuccess, playFail, playFanfare } from './audio.js';
 
 const PRAISE = ['Молодец! 🎉', 'Точно! ✨', 'Верно! 👏', 'Здорово! 🌟', 'Супер! 🎸'];
+
+/**
+ * Wrong options that always include the answer's "twin" — another item with
+ * the same `key`: the same note name in another octave, the same finger on
+ * the other hand. Then the set that is being told apart really matters.
+ */
+export function pickWithTwin(key) {
+  return (item, pool, count) => {
+    const twins = pool.filter((other) => other[key] === item[key] && other.id !== item.id);
+    if (!twins.length) return sample(pool, count, [item]);
+    const [twin] = sample(twins, 1);
+    return [twin, ...sample(pool, count - 1, [item, twin])];
+  };
+}
 
 function buildQueue(notes, count) {
   const queue = [];
@@ -29,6 +49,9 @@ export function createQuiz(config) {
     optionsClass = 'options',
     renderPrompt,
     renderOption,
+    // a picture to answer on, in place of the option buttons; gets
+    // (note, notes, pick), where pick(id) answers with that id
+    renderBoard = null,
     onAsk = null,
     // controls above the question; gets { redraw, restart }
     renderControls = null,
@@ -84,22 +107,29 @@ export function createQuiz(config) {
 
         const note = queue[index];
         const fresh = !options;
-        if (fresh) options = shuffle([note, ...pickOthers(note, pool, optionsCount - 1)]);
+        if (fresh) options = renderBoard ? [] : shuffle([note, ...pickOthers(note, pool, optionsCount - 1)]);
         const feedback = el('div', { class: 'feedback' }, ' ');
 
-        const optionNodes = options.map((option) =>
-          el('button', {
-            class: 'option',
-            type: 'button',
-            onclick: () => answer(option, note, optionNodes, feedback),
-          }, renderOption(option, pool)));
+        let answers;
+        const pick = (id) => answer(id, note, answers, feedback);
+        if (renderBoard) {
+          answers = el('div', { class: 'board' }, renderBoard(note, pool, pick));
+        } else {
+          answers = el('div', { class: optionsClass }, options.map((option) =>
+            el('button', {
+              class: 'option',
+              type: 'button',
+              'data-answer': option.id,
+              onclick: () => pick(option.id),
+            }, renderOption(option, pool))));
+        }
 
         mount(screen,
           renderProgress(),
           renderControls ? renderControls({ redraw, restart }) : null,
           el('div', { class: 'question' }, renderPrompt(note, pool)),
           feedback,
-          el('div', { class: optionsClass }, optionNodes),
+          answers,
         );
 
         if (fresh && onAsk) onAsk(note);
@@ -122,18 +152,20 @@ export function createQuiz(config) {
         renderQuestion();
       }
 
-      async function answer(picked, correctNote, optionNodes, feedback) {
+      async function answer(pickedId, correctNote, answers, feedback) {
         if (locked) return;
         locked = true;
         const current = round;
 
-        const isCorrect = picked.id === correctNote.id;
+        const isCorrect = pickedId === correctNote.id;
         store.recordAnswer(correctNote.id, isCorrect);
 
-        optionNodes.forEach((node, i) => {
-          node.disabled = true;
-          if (options[i].id === correctNote.id) node.classList.add('option--right');
-          else if (options[i].id === picked.id) node.classList.add('option--wrong');
+        answers.classList.add('is-answered');
+        answers.querySelectorAll('[data-answer]').forEach((node) => {
+          if (node instanceof HTMLButtonElement) node.disabled = true;
+          const id = node.getAttribute('data-answer');
+          if (id === correctNote.id) node.classList.add('option--right');
+          else if (id === pickedId) node.classList.add('option--wrong');
         });
 
         if (isCorrect) {

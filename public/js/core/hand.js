@@ -87,22 +87,46 @@ function knucklePath({ x, base, width }) {
   return `M ${x - half},${base + 1} Q ${x},${base + 4.5} ${x + half},${base + 1}`;
 }
 
+const leaning = (finger) => `rotate(${finger.turn} ${finger.x} ${finger.base})`;
+
 /**
  * One hand. side — 'left' or 'right'; labels — what to write on the fingers,
  * e.g. { index: '1' }; active — the finger to paint in the accent colour.
+ *
+ * onPick makes the fingers tappable: it is called with '<side>-<finger>',
+ * e.g. 'left-index', and every finger carries that id in data-answer, so a
+ * quiz can mark the right and the wrong one (js/core/quiz.js).
  */
-export function renderHand(side, { labels = {}, active = null, label = '' } = {}) {
+export function renderHand(side, { labels = {}, active = null, label = '', onPick = null } = {}) {
   const mirror = side === 'left';
+  const answerOf = (finger) => `${side}-${finger.id}`;
+  const tappable = (node, finger) => {
+    if (onPick) node.addEventListener('click', () => onPick(answerOf(finger)));
+    return node;
+  };
+
+  // Fingers are narrow for a child's tap, so each one also gets a wider
+  // invisible outline. These lie under all the fingers: a tap on a finger
+  // itself always goes to that finger, the outline only catches near misses.
+  const hits = onPick
+    ? FINGERS.map((finger) => tappable(svgEl('path', {
+      d: fingerPath(finger),
+      class: 'hand__hit',
+      transform: leaning(finger),
+    }), finger))
+    : null;
 
   const hand = svgEl('g', { transform: mirror ? `translate(${WIDTH} 0) scale(-1 1)` : null },
     svgEl('path', { d: BACK, class: 'hand__part' }),
-    FINGERS.map((finger) => svgEl('g', {
+    hits,
+    FINGERS.map((finger) => tappable(svgEl('g', {
       class: `hand__finger ${active === finger.id ? 'hand__finger--active' : ''}`.trim(),
-      transform: `rotate(${finger.turn} ${finger.x} ${finger.base})`,
+      transform: leaning(finger),
+      'data-answer': onPick ? answerOf(finger) : null,
     },
       svgEl('path', { d: fingerPath(finger), class: 'hand__part' }),
       svgEl('rect', { ...nailRect(finger), class: 'hand__nail' }),
-    )),
+    ), finger)),
     FINGERS.filter((finger) => finger.id !== 'thumb')
       .map((finger) => svgEl('path', { d: knucklePath(finger), class: 'hand__crease' })),
   );
@@ -118,7 +142,7 @@ export function renderHand(side, { labels = {}, active = null, label = '' } = {}
 
   return svgEl('svg', {
     viewBox: `0 0 ${WIDTH} ${HEIGHT}`,
-    class: 'hand',
+    class: `hand ${onPick ? 'hand--pickable' : ''}`.trim(),
     role: 'img',
     'aria-label': label,
   }, hand, ...marks);

@@ -707,6 +707,43 @@ main {
   .options--staves { grid-template-columns: repeat(4, 1fr); }
 }
 
+/* ---------- Finger games ---------- */
+
+.prompt__paper--hand { width: min(170px, 46vw); padding: 10px 14px; }
+.prompt__hand { font-size: 20px; font-weight: 800; }
+
+.options--marks { grid-template-columns: repeat(4, 1fr); }
+.options--marks .option { min-height: 84px; padding: 10px; }
+.option__mark { font-size: 40px; font-weight: 900; line-height: 1; }
+
+/* the hands to tap on: side by side, the left one on the left */
+.hands-board {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 12px 10px;
+  border-radius: var(--radius);
+  background: #fffdf5;
+  box-shadow: var(--shadow);
+}
+
+.hands-board__hand { flex: 0 1 220px; min-width: 0; text-align: center; }
+.hands-board__name { margin-top: 4px; font-size: 16px; font-weight: 800; color: var(--muted); }
+
+.hand--pickable .hand__finger,
+.hand--pickable .hand__hit { cursor: pointer; }
+.board.is-answered .hand--pickable * { cursor: default; }
+
+/* the wider invisible outline of a finger, see js/core/hand.js */
+.hand__hit { fill: transparent; stroke: transparent; stroke-width: 9; stroke-linejoin: round; }
+
+.hand__finger .hand__part { transition: fill .15s ease; }
+.hand__finger.option--right .hand__part { fill: #66bb6a; }
+.hand__finger.option--wrong { opacity: 1; }
+.hand__finger.option--wrong .hand__part { fill: #ef5350; }
+.hand__finger.option--right .hand__nail,
+.hand__finger.option--wrong .hand__nail { fill: rgba(255, 255, 255, .72); }
+
 /* ---------- Topics on the home screen ---------- */
 
 .topics {
