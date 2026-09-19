@@ -54,6 +54,31 @@ function topics() {
   return list.filter((topic) => topic.items.length);
 }
 
+// ---------- What's new ----------
+
+/**
+ * Sections the player has already come across in a topic menu. A topic with
+ * any section missing here gets "Новое!" on its tile, and so does that
+ * section's card once inside — this is how a section added to an existing
+ * topic gets noticed.
+ */
+function seenSections() {
+  const { settings, stars } = store.state;
+  if (settings.sectionsSeen) return settings.sectionsSeen;
+
+  // Before sections were counted one by one, opening a topic marked the whole
+  // topic seen; its sections count as seen. A player from before the topics
+  // existed has in fact seen everything.
+  const { topicsSeen } = settings;
+  const wasSeen = (module) => (topicsSeen ? Boolean(topicsSeen[module.group]) : stars > 0);
+  const seen = Object.fromEntries(MODULES.filter(wasSeen).map((module) => [module.id, true]));
+  store.setSetting('sectionsSeen', seen);
+  return seen;
+}
+
+// a brand new player has seen nothing yet — there the badge would be on everything
+const showsNew = () => store.state.stars > 0;
+
 // ---------- Home screen ----------
 
 /** The rainbow of notes, each one playable: a reminder that is also a toy. */
@@ -120,11 +145,9 @@ function renderTopicDots(games) {
 }
 
 /** A topic tile: emoji, name and how the games inside are going. */
-function renderTopicCard(topic) {
+function renderTopicCard(topic, seen) {
   const games = topic.items.filter((module) => module.kind !== 'learn');
-  const seen = store.setting('topicsSeen', {});
-  // a brand new player has seen nothing yet — there the badge would be on everything
-  const isNew = store.state.stars > 0 && !seen[topic.id];
+  const isNew = showsNew() && topic.items.some((module) => !seen[module.id]);
 
   return el('a', {
     class: 'topic-card',
@@ -146,18 +169,12 @@ function renderHome() {
   // the rainbow strip sounds on the very first tap
   loadPiano();
 
-  // A player from before the topics existed has in fact seen them all; without
-  // this every tile would light up "Новое!" at once. The badge is for topics
-  // added later.
-  if (store.state.stars > 0 && !store.state.settings.topicsSeen) {
-    store.setSetting('topicsSeen', Object.fromEntries(topics().map((topic) => [topic.id, true])));
-  }
-
+  const seen = seenSections();
   mount(appEl,
     el('p', { class: 'hello' }, `Привет, ${store.player.name}! Выбери, чем сегодня займёмся 🎸`),
     renderGuitarCard(),
     renderRainbowStrip(),
-    el('div', { class: 'topics' }, topics().map(renderTopicCard)),
+    el('div', { class: 'topics' }, topics().map((topic) => renderTopicCard(topic, seen))),
   );
 }
 
@@ -179,7 +196,7 @@ function renderResult(module) {
     [1, 2, 3].map((i) => el('span', { class: `stars__one ${i <= count ? '' : 'stars__one--off'}` }, '⭐')));
 }
 
-function renderMenuCard(module) {
+function renderMenuCard(module, isNew) {
   return el('a', {
     class: 'menu-card',
     href: `#${module.id}`,
@@ -187,7 +204,9 @@ function renderMenuCard(module) {
   },
     el('div', { class: 'menu-card__emoji' }, module.emoji),
     el('div', { class: 'menu-card__text' },
-      el('div', { class: 'menu-card__title' }, module.title),
+      el('div', { class: 'menu-card__title' },
+        module.title,
+        isNew ? el('span', { class: 'badge' }, 'Новое!') : null),
       el('div', { class: 'menu-card__sub' }, module.subtitle),
       renderResult(module)),
   );
@@ -198,12 +217,16 @@ function renderTopic(topic) {
   backBtn.hidden = false;
   parentRoute = '';
 
-  const seen = store.setting('topicsSeen', {});
-  if (!seen[topic.id]) store.setSetting('topicsSeen', { ...seen, [topic.id]: true });
+  // the badges stay on the cards for this visit and are gone the next time
+  const seen = seenSections();
+  const isNew = (module) => showsNew() && !seen[module.id];
+  if (topic.items.some((module) => !seen[module.id])) {
+    store.setSetting('sectionsSeen', { ...seen, ...Object.fromEntries(topic.items.map((module) => [module.id, true])) });
+  }
 
   mount(appEl,
     el('p', { class: 'lead' }, topic.subtitle),
-    el('div', { class: 'menu' }, topic.items.map(renderMenuCard)),
+    el('div', { class: 'menu' }, topic.items.map((module) => renderMenuCard(module, isNew(module)))),
   );
 }
 

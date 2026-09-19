@@ -202,7 +202,7 @@ main {
   background: color-mix(in srgb, var(--accent) 18%, white);
 }
 
-.menu-card__title { font-size: 18px; font-weight: 800; }
+.menu-card__title { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 18px; font-weight: 800; }
 .menu-card__sub { font-size: 14px; color: var(--muted); margin-top: 2px; }
 
 /* "Учим" / "Ещё не играли" — the accent darkened, so a light accent stays readable */
@@ -665,6 +665,41 @@ main {
 .toggle--on .toggle__dot { background: linear-gradient(90deg, #E53935, #FB8C00, #FDD835, #43A047, #29B6F6, #3949AB, #8E24AA); }
 .toggle--on .toggle__dot::after { transform: translateX(12px); }
 
+/* ---------- Octave chips ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.chips__label { font-size: 14px; font-weight: 700; color: rgba(255, 255, 255, .7); }
+
+.chip {
+  min-width: 56px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  color: rgba(255, 255, 255, .8);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.chip--on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.chip--on::before { content: '✓ '; }
+.chip:active { transform: scale(.95); }
+
 .memo__list { margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.55; color: rgba(255, 255, 255, .8); }
 .memo__list li { margin-bottom: 6px; }
 
@@ -724,7 +759,7 @@ main {
 .topic-card__dots .dot--done { background: #FFB300; }
 .topic-card__dots .dot--perfect { box-shadow: 0 0 0 3px rgba(255, 179, 0, .3); }
 
-/* ---------- Second octave ---------- */
+/* ---------- Staff lessons ---------- */
 
 .block-title {
   margin: 30px 0 10px;

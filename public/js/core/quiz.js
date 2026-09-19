@@ -1,6 +1,7 @@
 // Generic quiz engine: ask a question about a note and offer several
 // answers. What the question and the answers look like is up to each
-// module (see js/modules/index.js).
+// module (see js/modules/index.js). renderPrompt, renderOption and
+// explainAnswer get the notes of the current round as a second argument.
 
 import { el, clear, shuffle, sample, delay, mount, topicHref } from './ui.js';
 import { NOTES } from '../data/notes.js';
@@ -29,8 +30,10 @@ export function createQuiz(config) {
     renderPrompt,
     renderOption,
     onAsk = null,
+    // controls above the question; gets { redraw, restart }
     renderControls = null,
-    // which notes to ask about: the first octave by default
+    // which notes to ask about: the first octave by default. A function is
+    // called at the start of every round, for sets the child can change.
     notes = NOTES,
     // wrong answer options; random notes from the same set by default
     pickOthers = (note, pool, count) => sample(pool, count, [note]),
@@ -47,11 +50,16 @@ export function createQuiz(config) {
     group,
 
     mount(root) {
-      let queue = buildQueue(notes, questions);
+      const roundNotes = () => (typeof notes === 'function' ? notes() : notes);
+      let pool = roundNotes();
+      let queue = buildQueue(pool, questions);
       let index = 0;
       let score = 0;
       let locked = false;
       let cancelled = false;
+      // bumped on every new round, so an answer still waiting for its
+      // feedback to finish doesn't move a round that has been restarted
+      let round = 0;
       // answers of the current question. They are kept, so that redrawing the
       // screen (the "coloured notes" toggle) neither reshuffles them nor
       // replays the sound — the question stays exactly the same one.
@@ -76,7 +84,7 @@ export function createQuiz(config) {
 
         const note = queue[index];
         const fresh = !options;
-        if (fresh) options = shuffle([note, ...pickOthers(note, notes, optionsCount - 1)]);
+        if (fresh) options = shuffle([note, ...pickOthers(note, pool, optionsCount - 1)]);
         const feedback = el('div', { class: 'feedback' }, ' ');
 
         const optionNodes = options.map((option) =>
@@ -84,12 +92,12 @@ export function createQuiz(config) {
             class: 'option',
             type: 'button',
             onclick: () => answer(option, note, optionNodes, feedback),
-          }, renderOption(option)));
+          }, renderOption(option, pool)));
 
         mount(screen,
           renderProgress(),
-          renderControls ? renderControls(redraw) : null,
-          el('div', { class: 'question' }, renderPrompt(note)),
+          renderControls ? renderControls({ redraw, restart }) : null,
+          el('div', { class: 'question' }, renderPrompt(note, pool)),
           feedback,
           el('div', { class: optionsClass }, optionNodes),
         );
@@ -102,9 +110,22 @@ export function createQuiz(config) {
         if (!locked) renderQuestion();
       }
 
+      /** A fresh round — "Ещё раз", or a control that changed the set of notes. */
+      function restart() {
+        pool = roundNotes();
+        queue = buildQueue(pool, questions);
+        index = 0;
+        score = 0;
+        options = null;
+        locked = false;
+        round += 1;
+        renderQuestion();
+      }
+
       async function answer(picked, correctNote, optionNodes, feedback) {
         if (locked) return;
         locked = true;
+        const current = round;
 
         const isCorrect = picked.id === correctNote.id;
         store.recordAnswer(correctNote.id, isCorrect);
@@ -121,13 +142,13 @@ export function createQuiz(config) {
           feedback.className = 'feedback feedback--good';
           playSuccess();
         } else {
-          feedback.textContent = explainAnswer(correctNote);
+          feedback.textContent = explainAnswer(correctNote, pool);
           feedback.className = 'feedback feedback--bad';
           playFail();
         }
 
         await delay(isCorrect ? 850 : 1600);
-        if (cancelled) return;
+        if (cancelled || current !== round) return;
         index += 1;
         options = null;
         locked = false;
@@ -153,18 +174,7 @@ export function createQuiz(config) {
             best && best.best > score ? el('div', { class: 'result__best' }, `Лучший результат: ${best.best}`) : null,
             el('div', { class: 'result__stars' }, '⭐'.repeat(Math.max(1, Math.round(score / 2)))),
             el('div', { class: 'row' },
-              el('button', {
-                class: 'btn btn--primary',
-                type: 'button',
-                onclick: () => {
-                  queue = buildQueue(notes, questions);
-                  index = 0;
-                  score = 0;
-                  options = null;
-                  locked = false;
-                  renderQuestion();
-                },
-              }, 'Ещё раз'),
+              el('button', { class: 'btn btn--primary', type: 'button', onclick: restart }, 'Ещё раз'),
               el('a', { class: 'btn', href: topicHref(group) }, 'В меню'),
             ),
           ),

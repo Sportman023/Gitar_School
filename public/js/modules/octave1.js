@@ -1,3 +1,6 @@
+// "First octave" section: the staff itself (lines, clef) and where each note
+// of C4–B4 lives on it. The other octave sections build on this one.
+
 import { el, clear } from '../core/ui.js';
 import { renderStaff, renderStaffRow, playableMap } from '../core/staff.js';
 import { NOTES, octaveName } from '../data/notes.js';
@@ -6,12 +9,12 @@ import { colorToggle } from '../core/controls.js';
 import { loadPiano, playPiano, playPianoScale } from '../core/piano.js';
 
 export default {
-  id: 'staff',
-  title: 'Ноты на стане',
-  subtitle: 'Первая октава: где живёт каждая нота',
+  id: 'octave1',
+  title: 'Первая октава',
+  subtitle: 'Нотный стан и ноты от До до Си',
   emoji: '🎼',
   accent: '#5C6BC0',
-  group: 'staff-1',
+  group: 'staff',
   kind: 'learn',
 
   mount(root) {
