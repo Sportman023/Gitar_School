@@ -42,10 +42,15 @@ GitHub Actions выкладывает папку `public/` (см. `.github/workf
 **https://sportman023.github.io/Gitar_School/beta/**
 
 ```bash
-git checkout beta && git push          # новая версия появится в /beta/ через минуту
-git checkout main && git merge --ff-only beta && git push   # учитель одобрила — выпускаем
-git checkout beta && git merge main    # после срочной правки прямо в main
+git checkout beta && git push                           # новая версия появится в /beta/ через минуту
+git checkout main && git merge --no-ff beta && git push # учитель одобрила — выпускаем
+git checkout beta && git merge --no-ff main && git push # после срочной правки прямо в main
 ```
+
+Слияния — только с `--no-ff`. GitHub Pages выкладывает каждый коммит один раз:
+если перемотать `main` на коммит, который уже выкладывался из `beta`, деплой
+тихо пропустится и дети не получат новую версию. Поэтому workflow падает с
+ошибкой, когда `main` и `beta` указывают на один и тот же коммит.
 
 В бете внизу экрана плашка «БЕТА», свои игроки и звёзды и свой кэш для работы
 без интернета: проверка беты на планшете ребёнка не трогает его прогресс.
