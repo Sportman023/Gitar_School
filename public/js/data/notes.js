@@ -65,14 +65,17 @@ export const NOTES_0 = transposed(SMALL_OCTAVE, { octave: 0, ratio: 0.5 });
 
 // ---------- Second octave ----------
 //
-// Only C5–G5 for now; A5 and B5 are taught later.
+// All seven notes, C5–B5. The last two climb above the staff, onto a ledger
+// line of their own — the mirror image of the small octave below it.
 
 const SECOND_OCTAVE = [
-  { base: 'do',  staff: 5, staffPlace: 'между 3-й и 4-й линейками' },
-  { base: 're',  staff: 6, staffPlace: 'на четвёртой линейке' },
-  { base: 'mi',  staff: 7, staffPlace: 'между 4-й и 5-й линейками' },
-  { base: 'fa',  staff: 8, staffPlace: 'на пятой линейке' },
-  { base: 'sol', staff: 9, staffPlace: 'над пятой линейкой' },
+  { base: 'do',  staff: 5,  staffPlace: 'между 3-й и 4-й линейками' },
+  { base: 're',  staff: 6,  staffPlace: 'на четвёртой линейке' },
+  { base: 'mi',  staff: 7,  staffPlace: 'между 4-й и 5-й линейками' },
+  { base: 'fa',  staff: 8,  staffPlace: 'на пятой линейке' },
+  { base: 'sol', staff: 9,  staffPlace: 'над пятой линейкой' },
+  { base: 'lya', staff: 10, staffPlace: 'на добавочной линеечке над станом' },
+  { base: 'si',  staff: 11, staffPlace: 'над добавочной линеечкой' },
 ];
 
 export const NOTES_2 = transposed(SECOND_OCTAVE, { octave: 2, ratio: 2 });
@@ -90,7 +93,7 @@ export const OCTAVES = [
   { octave: 2, name: '2 октавы', short: '2-я', notes: NOTES_2 },
 ];
 
-// All the notes in a row, low to high: E3 … B3, C4 … B4, C5 … G5.
+// All the notes in a row, low to high: E3 … B3, C4 … B4, C5 … B5.
 export const ALL_NOTES = OCTAVES.flatMap((octave) => octave.notes);
 
 const octaveOf = (octave) => OCTAVES.find((item) => item.octave === octave);

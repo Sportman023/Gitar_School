@@ -5,9 +5,9 @@
 //   first (E)      y = 64
 //   second (G)     y = 54  — the curl of the treble clef wraps around it
 // A note's position comes from its `staff` field in js/data/notes.js. Notes
-// outside the five lines hang on ledger lines of their own, above (the second
-// octave) and below (middle C and the whole small octave), so how tall a
-// picture has to be depends on the notes in it — see staffHeight.
+// outside the five lines hang on ledger lines of their own, above (the top of
+// the second octave) and below (middle C and the whole small octave), so how
+// big a picture has to be depends on the notes in it — see staffBox.
 //
 // Two pictures live here:
 //   renderStaff    — a staff with a single note (cards and quizzes);
@@ -23,7 +23,7 @@ const G_LINE = TOP_LINE + SPACING * 3;        // 54 — second line, note G
 const MIDDLE_STEP = 4;                        // middle line, note B
 const MIDDLE_Y = TOP_LINE + SPACING * 2;      // 44 — the same line in coordinates
 const HEIGHT = 94;                            // picture with nothing below middle C
-const NOTE_ROOM = 13;                         // room under the lowest note head
+const NOTE_ROOM = 13;                         // room beyond the outermost note head
 const NOTE_X = 88;
 const HEAD_RX = 6.3;
 const HEAD_RY = 4.7;
@@ -48,13 +48,16 @@ export function noteY(note) {
 }
 
 /**
- * How tall a picture has to be so that these notes fit with their ledger
- * lines. One height is counted for a whole set of notes, so that cards or
- * answers standing side by side are all the same size and the staff doesn't
- * jump from one question to the next.
+ * The box a picture needs so that these notes fit with their ledger lines:
+ * where its top edge is (above the staff the notes go into the minus) and how
+ * tall it is. The box is counted for a whole set of notes at once, so that
+ * cards or answers standing side by side are all the same size and the staff
+ * doesn't jump from one question to the next.
  */
-export function staffHeight(notes) {
-  return Math.round(Math.max(HEIGHT - NOTE_ROOM, ...notes.map(noteY)) + NOTE_ROOM);
+export function staffBox(notes) {
+  const top = Math.min(0, ...notes.map((note) => noteY(note) - NOTE_ROOM));
+  const bottom = Math.max(HEIGHT, ...notes.map((note) => noteY(note) + NOTE_ROOM));
+  return { top: Math.round(top), height: Math.round(bottom - top) };
 }
 
 /** Five staff lines of the given length plus the treble clef. */
@@ -106,15 +109,15 @@ function noteParts(note, x, colored) {
 /**
  * A staff with one note (or an empty staff when no note is given).
  * colored — paint the note head in its rainbow colour;
- * height — one height for a whole set of pictures (see staffHeight).
+ * box — one box for a whole set of pictures (see staffBox).
  */
-export function renderStaff(note, { colored = true, extraClass = '', height = staffHeight(note ? [note] : []) } = {}) {
+export function renderStaff(note, { colored = true, extraClass = '', box = staffBox(note ? [note] : []) } = {}) {
   const width = 126;
   const parts = staffBase(width);
   if (note) parts.push(...noteParts(note, NOTE_X, colored));
 
   return svgEl('svg', {
-    viewBox: `0 0 ${width} ${height}`,
+    viewBox: `0 ${box.top} ${width} ${box.height}`,
     class: `staff ${extraClass}`.trim(),
     role: 'img',
     'aria-label': note ? `Нота ${note.ru} на нотном стане` : 'Пустой нотный стан',
@@ -129,8 +132,9 @@ export function renderStaff(note, { colored = true, extraClass = '', height = st
 export function renderStaffRow(notes, { colored = true, extraClass = '' } = {}) {
   const xAt = (i) => ROW_FIRST_X + i * ROW_STEP;
   const width = xAt(notes.length - 1) + 22;
-  const bracketY = staffHeight(notes) - 2;    // the brackets pass under the lowest note
-  const height = bracketY + 16;               // and their labels under the brackets
+  const box = staffBox(notes);
+  const bracketY = box.top + box.height - 2;  // the brackets pass under the lowest note
+  const height = bracketY + 16 - box.top;     // and their labels under the brackets
   const parts = staffBase(width);
 
   notes.forEach((note, i) => {
@@ -141,7 +145,7 @@ export function renderStaffRow(notes, { colored = true, extraClass = '' } = {}) 
       'aria-label': `Нота ${note.ru} ${octaveName(note)}`,
     },
       // a transparent full-height strip: a tiny note head is hard to hit with a finger
-      svgEl('rect', { x: xAt(i) - ROW_STEP / 2, y: 0, width: ROW_STEP, height, class: 'staff__hit' }),
+      svgEl('rect', { x: xAt(i) - ROW_STEP / 2, y: box.top, width: ROW_STEP, height, class: 'staff__hit' }),
       ...noteParts(note, xAt(i), colored)));
   });
 
@@ -156,7 +160,7 @@ export function renderStaffRow(notes, { colored = true, extraClass = '' } = {}) 
   }
 
   return svgEl('svg', {
-    viewBox: `0 0 ${width} ${height}`,
+    viewBox: `0 ${box.top} ${width} ${height}`,
     class: `staff ${extraClass}`.trim(),
     role: 'img',
     'aria-label': 'Ноты подряд на нотном стане',

@@ -22,7 +22,7 @@ const BETA_URL = new URL('beta/', self.location).href;
 // even in sections that were never opened online. Keep in sync with js/core/piano.js.
 const PRECACHE = [
   './', './index.html', './styles.css',
-  ...['Ds3', 'Fs3', 'A3', 'C4', 'Ds4', 'Fs4', 'A4', 'C5', 'Ds5', 'Fs5', 'A5'].map((key) => `./audio/piano/${key}.mp3`),
+  ...['Ds3', 'Fs3', 'A3', 'C4', 'Ds4', 'Fs4', 'A4', 'C5', 'Ds5', 'Fs5', 'A5', 'C6'].map((key) => `./audio/piano/${key}.mp3`),
 ];
 
 self.addEventListener('install', (event) => {

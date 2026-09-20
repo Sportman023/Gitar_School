@@ -3,7 +3,7 @@
 // How it runs into the first octave is shown in the octave ladder.
 
 import { el, clear } from '../core/ui.js';
-import { renderStaff, renderStaffRow, playableMap, staffHeight } from '../core/staff.js';
+import { renderStaff, renderStaffRow, playableMap, staffBox } from '../core/staff.js';
 import { colorToggle } from '../core/controls.js';
 import { store } from '../core/store.js';
 import { loadPiano, playPiano, playPianoScale } from '../core/piano.js';
@@ -25,8 +25,8 @@ export default {
     const screen = el('div', { class: 'screen octave-small' });
     root.append(screen);
 
-    // one height for every picture here, so the low notes fit under the staff
-    const height = staffHeight(NOTES_0);
+    // one box for every picture here, so the low notes fit under the staff
+    const box = staffBox(NOTES_0);
 
     function render() {
       clear(screen);
@@ -53,7 +53,7 @@ export default {
             type: 'button',
             onclick: () => playPiano(note.freq),
           },
-            renderStaff(note, { colored, height }),
+            renderStaff(note, { colored, box }),
             el('div', { class: 'staff-card__name' }, `${note.ru} ${octaveName(note)}`),
             el('div', { class: 'staff-card__place' }, note.staffPlace),
           ))),

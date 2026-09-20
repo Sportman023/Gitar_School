@@ -2,10 +2,10 @@
 // Salamander Grand Piano (a Yamaha C5 grand) by Alexander Holm,
 // licensed CC BY 3.0 — http://creativecommons.org/licenses/by/3.0/
 //
-// The piano was recorded every minor third, so only eleven keys — D#3 to A5 —
+// The piano was recorded every minor third, so only twelve keys — D#3 to C6 —
 // are stored in audio/piano/. A note in between is the nearest recording
 // played a semitone faster or slower, which is inaudible on a piano.
-// The range covers every octave the app teaches: E3-B3, C4-B4 and C5-G5.
+// The range covers every octave the app teaches: E3-B3, C4-B4 and C5-B5.
 // The recordings differ in loudness (the higher, the quieter). They are
 // levelled on load, so volume never hints at which note it is.
 
@@ -23,6 +23,7 @@ const SAMPLES = [
   { file: 'Ds5.mp3', freq: 622.25 },
   { file: 'Fs5.mp3', freq: 739.99 },
   { file: 'A5.mp3', freq: 880.00 },
+  { file: 'C6.mp3', freq: 1046.50 },
 ];
 
 const BASE = new URL('../../audio/piano/', import.meta.url);
