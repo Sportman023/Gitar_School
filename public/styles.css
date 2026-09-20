@@ -583,8 +583,14 @@ main {
   color: var(--ink);
 }
 
-.poem__mark {
+.poem__marks {
   flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.poem__mark {
   display: grid;
   place-items: center;
   width: 42px;

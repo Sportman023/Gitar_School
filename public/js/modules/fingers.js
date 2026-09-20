@@ -10,21 +10,22 @@ const ACCENT = '#00ACC1';
 const LEFT = FINGERS.filter((finger) => finger.side === 'left');
 const RIGHT = FINGERS.filter((finger) => finger.side === 'right');
 
-// A rhyme about the right hand: one stanza per finger, in the p, i, m, a order.
+// A rhyme about the right hand, in the p, i, m, a order: one stanza per finger,
+// except i and m, which the rhyme keeps together as a pair.
 const POEM = [
-  { mark: 'p', lines: [
+  { marks: ['p'], lines: [
     'Пальчик «p» у нас большой,',
     'Главный пальчик, деловой.',
     'На струне у нас стоит,',
     'Всем команды говорит.',
   ] },
-  { mark: 'i', lines: [
+  { marks: ['i', 'm'], lines: [
     'Палец «i» — дружочек, брат,',
     'Пальцу «m» всегда он рад.',
     'Чередуются друзья,',
     'Им легко шагать тогда.',
   ] },
-  { mark: 'a', lines: [
+  { marks: ['a'], lines: [
     'Палец «a» их старший брат,',
     'Задаёт друзьям он такт.',
     'Главный он у них порой —',
@@ -45,11 +46,12 @@ function fingerCards(fingers) {
     )));
 }
 
-/** The rhyme: every stanza is headed by the letter of the finger it is about. */
+/** The rhyme: every stanza is headed by the letters of the fingers it is about. */
 function poemStanzas() {
   return el('div', { class: 'poem' },
     POEM.map((stanza) => el('div', { class: 'poem__stanza' },
-      el('div', { class: 'poem__mark' }, stanza.mark),
+      el('div', { class: 'poem__marks' },
+        stanza.marks.map((mark) => el('div', { class: 'poem__mark' }, mark))),
       el('div', { class: 'poem__lines' },
         stanza.lines.map((line) => el('div', { class: 'poem__line' }, line))),
     )));
