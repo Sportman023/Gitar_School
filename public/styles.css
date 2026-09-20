@@ -848,6 +848,8 @@ main {
   color: rgba(255, 255, 255, .65);
 }
 
+/* a row of notes keeps them at their own size (the picture sets min-width):
+   on phones a long ladder scrolls sideways instead of shrinking to crumbs */
 .staff-row {
   max-width: 640px;
   margin: 0 auto;
@@ -857,9 +859,6 @@ main {
   box-shadow: var(--shadow);
   overflow-x: auto;
 }
-
-/* on phones a long ladder scrolls sideways instead of shrinking to crumbs */
-.staff-row--long .staff { min-width: 460px; }
 
 .staff__note { cursor: pointer; }
 .staff__hit { fill: transparent; }

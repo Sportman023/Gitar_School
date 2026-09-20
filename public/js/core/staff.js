@@ -161,6 +161,9 @@ export function renderStaffRow(notes, { colored = true, extraClass = '' } = {}) 
 
   return svgEl('svg', {
     viewBox: `0 ${box.top} ${width} ${height}`,
+    // never squeeze the notes below their own size: a row that doesn't fit
+    // the screen is scrolled sideways instead (see .staff-row in styles.css)
+    style: `min-width:${width}px`,
     class: `staff ${extraClass}`.trim(),
     role: 'img',
     'aria-label': 'Ноты подряд на нотном стане',
