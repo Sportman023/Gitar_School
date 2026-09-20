@@ -14,9 +14,10 @@ import fingers from './fingers.js';
 import { fingerToMark, markToFinger } from './finger-games.js';
 import octave1 from './octave1.js';
 import octave2 from './octave2.js';
+import octaveSmall from './octave-small.js';
 import octaves from './octaves.js';
 import { colorToggle, octaveChips, drilledNotes } from '../core/controls.js';
-import { renderStaff } from '../core/staff.js';
+import { renderStaff, staffHeight } from '../core/staff.js';
 import { store } from '../core/store.js';
 import { createQuiz, pickWithTwin } from '../core/quiz.js';
 import { el, noteBubble, colorBubble, noteStyle } from '../core/ui.js';
@@ -44,7 +45,7 @@ export const GROUPS = [
   {
     id: 'staff',
     title: 'Нотный стан',
-    subtitle: 'Ноты первой и второй октавы',
+    subtitle: 'Ноты малой, первой и второй октавы',
     emoji: '🎼',
     accent: '#5C6BC0',
   },
@@ -123,6 +124,8 @@ function namePrompt(label, note) {
 // With several octaves one name repeats, so the options always include the
 // same note from another octave. Colour only hints the name (C4 and C5 are
 // both red): which of the two it is has to be read from the staff.
+// Every picture of a round is as tall as the lowest picked octave needs,
+// so the staff stays put while the questions go by.
 
 const isMixed = (notes) => new Set(notes.map((note) => note.octave)).size > 1;
 
@@ -141,10 +144,10 @@ const staffToNote = createQuiz({
   pickOthers: pickWithTwin('pc'),
   optionsClass: 'options options--names',
   renderControls: ({ redraw, restart }) => [octaveChips(restart), colorToggle(redraw)],
-  renderPrompt: (note) => el('div', { class: 'prompt' },
+  renderPrompt: (note, notes) => el('div', { class: 'prompt' },
     el('div', { class: 'prompt__label' }, 'Какая это нота?'),
     el('div', { class: 'prompt__paper' },
-      renderStaff(note, { colored: store.setting('coloredHeads', true) })),
+      renderStaff(note, { colored: store.setting('coloredHeads', true), height: staffHeight(notes) })),
   ),
   renderOption: (note, notes) => (isMixed(notes)
     ? el('span', { class: 'option__stack' },
@@ -170,8 +173,8 @@ const noteToStaff = createQuiz({
   optionsClass: 'options options--staves',
   renderControls: ({ restart }) => octaveChips(restart),
   renderPrompt: (note) => namePrompt('Где на стане живёт нота', note),
-  renderOption: (note) => el('div', { class: 'prompt__paper prompt__paper--small' },
-    renderStaff(note, { colored: false })),
+  renderOption: (note, notes) => el('div', { class: 'prompt__paper prompt__paper--small' },
+    renderStaff(note, { colored: false, height: staffHeight(notes) })),
   explainAnswer: (note) => `${note.ru} ${octaveName(note)} — ${note.staffPlace}`,
 });
 
@@ -188,6 +191,7 @@ export const MODULES = [
 
   octave1,
   octave2,
+  octaveSmall,
   octaves,
   staffToNote,
   noteToStaff,
