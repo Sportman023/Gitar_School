@@ -3,35 +3,20 @@
 
 import { el } from '../core/ui.js';
 import { renderHand } from '../core/hand.js';
+import { FINGERS, fingerTitle } from '../data/fingers.js';
 
 const ACCENT = '#00ACC1';
 
-const LEFT = [
-  { id: 'index', mark: '1', name: 'указательный' },
-  { id: 'middle', mark: '2', name: 'средний' },
-  { id: 'ring', mark: '3', name: 'безымянный' },
-  { id: 'pinky', mark: '4', name: 'мизинец' },
-];
+const LEFT = FINGERS.filter((finger) => finger.side === 'left');
+const RIGHT = FINGERS.filter((finger) => finger.side === 'right');
 
-const RIGHT = [
-  { id: 'thumb', mark: 'p', name: 'большой', from: 'pulgar' },
-  { id: 'index', mark: 'i', name: 'указательный', from: 'índice' },
-  { id: 'middle', mark: 'm', name: 'средний', from: 'medio' },
-  { id: 'ring', mark: 'a', name: 'безымянный', from: 'anular' },
-];
-
-const HAND_NAME = { left: 'Левая', right: 'Правая' };
-
-const allLabels = (fingers) => Object.fromEntries(fingers.map((finger) => [finger.id, finger.mark]));
+const allLabels = (fingers) => Object.fromEntries(fingers.map((finger) => [finger.finger, finger.mark]));
 
 /** One card per finger: the hand with that finger lit up, plus its mark and name. */
-function fingerCards(side, fingers) {
+function fingerCards(fingers) {
   return el('div', { class: 'finger-grid' },
     fingers.map((finger) => el('div', { class: 'finger-card' },
-      renderHand(side, {
-        active: finger.id,
-        label: `${HAND_NAME[side]} рука, ${finger.name} палец`,
-      }),
+      renderHand(finger.side, { active: finger.finger, label: fingerTitle(finger) }),
       el('div', { class: 'finger-card__mark' }, finger.mark),
       el('div', { class: 'finger-card__name' }, finger.name),
       finger.from ? el('div', { class: 'finger-card__from' }, `от испанского ${finger.from}`) : null,
@@ -57,7 +42,7 @@ export default {
       el('p', { class: 'caption' },
         'Считаем от указательного: 1, 2, 3, 4. У большого пальца номера нет — '
         + 'он держит шейку гитары сзади.'),
-      fingerCards('left', LEFT),
+      fingerCards(LEFT),
 
       el('h3', { class: 'block-title' }, 'Правая рука — буквы'),
       el('div', { class: 'hand-stage' },
@@ -65,7 +50,7 @@ export default {
       el('p', { class: 'caption' },
         'p, i, m, a — первые буквы испанских названий пальцев. '
         + 'У мизинца обозначение e, но он обычно не играет.'),
-      fingerCards('right', RIGHT),
+      fingerCards(RIGHT),
 
       el('div', { class: 'memo' },
         el('div', { class: 'memo__title' }, 'Как запомнить'),

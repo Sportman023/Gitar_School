@@ -51,10 +51,20 @@ export const NOTES_2 = SECOND_OCTAVE.map(({ base, ...place }) => {
   return { ...first, ...place, id: `${base}2`, octave: 2, freq: Math.round(first.freq * 200) / 100 };
 });
 
-// Both octaves in a row, low to high: C4 … B4, C5 … G5.
-export const TWO_OCTAVES = [...NOTES, ...NOTES_2];
+// ---------- Octaves ----------
+//
+// Every octave the app teaches, low to high. `name` follows a note name as
+// said in class ("До 2 октавы"); `short` is the octave on its own, e.g. on the
+// chips that pick octaves for the staff games. A new octave is one more entry
+// here: the octave ladder and the staff games pick it up by themselves.
 
-const OCTAVE_NAMES = { 1: '1 октавы', 2: '2 октавы' };
+export const OCTAVES = [
+  { octave: 1, name: '1 октавы', short: '1-я', notes: NOTES },
+  { octave: 2, name: '2 октавы', short: '2-я', notes: NOTES_2 },
+];
+
+// All the notes in a row, low to high: C4 … B4, C5 … G5.
+export const ALL_NOTES = OCTAVES.flatMap((octave) => octave.notes);
 
 /** Octave label as used after a note name in class, e.g. "C of the 2nd octave". */
-export const octaveName = (note) => OCTAVE_NAMES[note.octave];
+export const octaveName = (note) => OCTAVES.find((item) => item.octave === note.octave).name;

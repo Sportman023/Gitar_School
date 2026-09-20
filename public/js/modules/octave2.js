@@ -1,20 +1,21 @@
-// "Second octave notes" section: a two-octave ladder on one staff and cards
-// for C5–G5 showing where each note is on the staff.
+// "Second octave" section: a ladder of C5–G5 and cards showing where each
+// note is on the staff. How it continues the first octave is shown in the
+// octave ladder.
 
 import { el, clear } from "../core/ui.js";
 import { renderStaff, renderStaffRow, playableMap } from "../core/staff.js";
 import { colorToggle } from "../core/controls.js";
 import { store } from "../core/store.js";
 import { loadPiano, playPiano, playPianoScale } from "../core/piano.js";
-import { NOTES_2, TWO_OCTAVES, octaveName } from "../data/notes.js";
+import { NOTES_2, octaveName } from "../data/notes.js";
 
 export default {
   id: "octave2",
-  title: "Ноты второй октавы",
+  title: "Вторая октава",
   subtitle: "До, Ре, Ми, Фа, Соль на нотном стане",
   emoji: "🎶",
   accent: "#AB47BC",
-  group: "staff-2",
+  group: "staff",
   kind: "learn",
 
   mount(root) {
@@ -36,11 +37,11 @@ export default {
         ),
         colorToggle(render),
 
-        el("h3", { class: "block-title" }, "Лесенка из двух октав"),
+        el("h3", { class: "block-title" }, "Лесенка из пяти нот"),
         el(
           "div",
-          { class: "staff-row staff-row--long" },
-          playableMap(renderStaffRow(TWO_OCTAVES, { colored }), (freq) =>
+          { class: "staff-row" },
+          playableMap(renderStaffRow(NOTES_2, { colored }), (freq) =>
             playPiano(freq, { duration: 1.4 }),
           ),
         ),
@@ -48,20 +49,7 @@ export default {
           "p",
           { class: "caption" },
           "Ноты шагают по очереди: линейка, промежуток, линейка, промежуток… " +
-            "До 2 октавы стоит сразу после Си — и звучит как До, только выше.",
-        ),
-        el(
-          "div",
-          { class: "row row--center" },
-          el(
-            "button",
-            {
-              class: "btn btn--primary",
-              type: "button",
-              onclick: () => playPianoScale(TWO_OCTAVES, { step: 0.34 }),
-            },
-            "▶ Сыграть лесенку",
-          ),
+            "До 2 октавы живёт между 3-й и 4-й линейками, а Соль забралась над пятой линейкой.",
         ),
 
         el("h3", { class: "block-title" }, "Где живёт каждая нота"),
@@ -98,6 +86,7 @@ export default {
             },
             "▶ Сыграть по порядку",
           ),
+          el("a", { class: "btn", href: "#octaves" }, "🪜 Лесенка октав"),
         ),
 
         el(

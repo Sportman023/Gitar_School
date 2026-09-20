@@ -5,20 +5,23 @@
 // module with { id, title, subtitle, emoji, accent, group, mount(root) } and
 // list it in MODULES; `group` is the id of a topic below. A section that only
 // explains something, without a game, also sets kind: 'learn' — then the menu
-// shows a tag instead of a score.
+// shows a tag instead of a score. A section added to an existing topic gets
+// "Новое!" on the topic tile and on its own card until the topic is opened.
 
 import learn from './learn.js';
 import rainbow from './rainbow.js';
 import fingers from './fingers.js';
-import staffLearn from './staff-learn.js';
-import octaveLearn from './octave2.js';
-import { colorToggle } from '../core/controls.js';
+import { fingerToMark, markToFinger } from './finger-games.js';
+import octave1 from './octave1.js';
+import octave2 from './octave2.js';
+import octaves from './octaves.js';
+import { colorToggle, octaveChips, drilledNotes } from '../core/controls.js';
 import { renderStaff } from '../core/staff.js';
 import { store } from '../core/store.js';
-import { createQuiz } from '../core/quiz.js';
-import { el, noteBubble, colorBubble, noteStyle, sample } from '../core/ui.js';
+import { createQuiz, pickWithTwin } from '../core/quiz.js';
+import { el, noteBubble, colorBubble, noteStyle } from '../core/ui.js';
 import { playPiano } from '../core/piano.js';
-import { NOTE_BY_ID, NOTES_2, TWO_OCTAVES, octaveName } from '../data/notes.js';
+import { NOTE_BY_ID, octaveName } from '../data/notes.js';
 
 // Topics of the home screen, in the order they are taught at school.
 // A new topic goes to the end of the list, so what is being learned now
@@ -39,18 +42,11 @@ export const GROUPS = [
     accent: '#00ACC1',
   },
   {
-    id: 'staff-1',
+    id: 'staff',
     title: 'Нотный стан',
-    subtitle: 'Первая октава: от До до Си',
+    subtitle: 'Ноты первой и второй октавы',
     emoji: '🎼',
     accent: '#5C6BC0',
-  },
-  {
-    id: 'staff-2',
-    title: 'Вторая октава',
-    subtitle: 'Те же ноты, только выше',
-    emoji: '🎶',
-    accent: '#AB47BC',
   },
 ];
 
@@ -123,64 +119,60 @@ function namePrompt(label, note) {
   );
 }
 
-// Staff games are the same for both octaves, so these are factories:
-// config adds the id, the group and the notes (first octave by default).
+// Staff games ask about the octaves picked on the chips above the question.
+// With several octaves one name repeats, so the options always include the
+// same note from another octave. Colour only hints the name (C4 and C5 are
+// both red): which of the two it is has to be read from the staff.
+
+const isMixed = (notes) => new Set(notes.map((note) => note.octave)).size > 1;
 
 // Reading notes on the staff. Note heads follow the shared "coloured notes"
 // setting: colour is a hint here (red head → C), and the answers are words,
 // otherwise the child could match colour to colour without reading the staff.
-const staffToNote = (config) => createQuiz({
+// With several octaves the answer carries the octave too.
+const staffToNote = createQuiz({
+  id: 'staff-to-note',
   title: 'Читаем ноты',
   subtitle: 'Нота на стане → название',
   emoji: '👀',
   accent: '#5C6BC0',
+  group: 'staff',
+  notes: drilledNotes,
+  pickOthers: pickWithTwin('pc'),
   optionsClass: 'options options--names',
-  renderControls: (refresh) => colorToggle(refresh),
+  renderControls: ({ redraw, restart }) => [octaveChips(restart), colorToggle(redraw)],
   renderPrompt: (note) => el('div', { class: 'prompt' },
     el('div', { class: 'prompt__label' }, 'Какая это нота?'),
     el('div', { class: 'prompt__paper' },
       renderStaff(note, { colored: store.setting('coloredHeads', true) })),
   ),
-  renderOption: (note) => el('span', { class: 'option__name' }, note.ru),
-  ...config,
+  renderOption: (note, notes) => (isMixed(notes)
+    ? el('span', { class: 'option__stack' },
+      el('span', { class: 'option__name' }, note.ru),
+      el('span', { class: 'option__octave' }, octaveName(note)))
+    : el('span', { class: 'option__name' }, note.ru)),
+  explainAnswer: (note, notes) => (isMixed(notes)
+    ? `Это ${note.ru} ${octaveName(note)}`
+    : `Это ${note.ru} — ${note.colorName.toLowerCase()}`),
 });
 
 // The reverse task: given a name, find where the note sits.
 // Heads are always black here, otherwise colour would give the answer away.
-const noteToStaff = (config) => createQuiz({
+const noteToStaff = createQuiz({
+  id: 'note-to-staff',
   title: 'Ставим ноты',
   subtitle: 'Название → место на стане',
   emoji: '✍️',
   accent: '#00897B',
+  group: 'staff',
+  notes: drilledNotes,
+  pickOthers: pickWithTwin('pc'),
   optionsClass: 'options options--staves',
+  renderControls: ({ restart }) => octaveChips(restart),
   renderPrompt: (note) => namePrompt('Где на стане живёт нота', note),
   renderOption: (note) => el('div', { class: 'prompt__paper prompt__paper--small' },
     renderStaff(note, { colored: false })),
-  ...config,
-});
-
-const SECOND = { group: 'staff-2', notes: NOTES_2 };
-
-// Both octaves mixed. Colour only hints the name: C4 and C5 share a colour.
-// That's why the options always include the same note from the other octave —
-// which of the two it is has to be read from the staff.
-const whichOctave = staffToNote({
-  id: 'which-octave',
-  title: 'Первая или вторая?',
-  subtitle: 'Читаем ноты двух октав вперемешку',
-  emoji: '🪜',
-  accent: '#F4511E',
-  group: 'staff-2',
-  notes: TWO_OCTAVES,
-  renderOption: (note) => el('span', { class: 'option__stack' },
-    el('span', { class: 'option__name' }, note.ru),
-    el('span', { class: 'option__octave' }, octaveName(note))),
-  pickOthers: (note, pool, count) => {
-    const twin = pool.find((other) => other.pc === note.pc && other.id !== note.id);
-    if (!twin) return sample(pool, count, [note]);
-    return [twin, ...sample(pool, count - 1, [note, twin])];
-  },
-  explainAnswer: (note) => `Это ${note.ru} ${octaveName(note)}`,
+  explainAnswer: (note) => `${note.ru} ${octaveName(note)} — ${note.staffPlace}`,
 });
 
 export const MODULES = [
@@ -191,13 +183,12 @@ export const MODULES = [
   listenAndGuess,
 
   fingers,
+  fingerToMark,
+  markToFinger,
 
-  staffLearn,
-  staffToNote({ id: 'staff-to-note', group: 'staff-1' }),
-  noteToStaff({ id: 'note-to-staff', group: 'staff-1' }),
-
-  octaveLearn,
-  staffToNote({ id: 'staff2-to-note', ...SECOND }),
-  noteToStaff({ id: 'note-to-staff2', ...SECOND }),
-  whichOctave,
+  octave1,
+  octave2,
+  octaves,
+  staffToNote,
+  noteToStaff,
 ];
