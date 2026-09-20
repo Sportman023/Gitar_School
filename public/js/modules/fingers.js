@@ -10,6 +10,28 @@ const ACCENT = '#00ACC1';
 const LEFT = FINGERS.filter((finger) => finger.side === 'left');
 const RIGHT = FINGERS.filter((finger) => finger.side === 'right');
 
+// A rhyme about the right hand: one stanza per finger, in the p, i, m, a order.
+const POEM = [
+  { mark: 'p', lines: [
+    'Пальчик «p» у нас большой,',
+    'Главный пальчик, деловой.',
+    'На струне у нас стоит,',
+    'Всем команды говорит.',
+  ] },
+  { mark: 'i', lines: [
+    'Палец «i» — дружочек, брат,',
+    'Пальцу «m» всегда он рад.',
+    'Чередуются друзья,',
+    'Им легко шагать тогда.',
+  ] },
+  { mark: 'a', lines: [
+    'Палец «a» их старший брат,',
+    'Задаёт друзьям он такт.',
+    'Главный он у них порой —',
+    'Братики за ним горой!',
+  ] },
+];
+
 const allLabels = (fingers) => Object.fromEntries(fingers.map((finger) => [finger.finger, finger.mark]));
 
 /** One card per finger: the hand with that finger lit up, plus its mark and name. */
@@ -20,6 +42,16 @@ function fingerCards(fingers) {
       el('div', { class: 'finger-card__mark' }, finger.mark),
       el('div', { class: 'finger-card__name' }, finger.name),
       finger.from ? el('div', { class: 'finger-card__from' }, `от испанского ${finger.from}`) : null,
+    )));
+}
+
+/** The rhyme: every stanza is headed by the letter of the finger it is about. */
+function poemStanzas() {
+  return el('div', { class: 'poem' },
+    POEM.map((stanza) => el('div', { class: 'poem__stanza' },
+      el('div', { class: 'poem__mark' }, stanza.mark),
+      el('div', { class: 'poem__lines' },
+        stanza.lines.map((line) => el('div', { class: 'poem__line' }, line))),
     )));
 }
 
@@ -51,6 +83,9 @@ export default {
         'p, i, m, a — первые буквы испанских названий пальцев. '
         + 'У мизинца обозначение e, но он обычно не играет.'),
       fingerCards(RIGHT),
+
+      el('h3', { class: 'block-title' }, 'Стихотворение про p, i, m, a'),
+      poemStanzas(),
 
       el('div', { class: 'memo' },
         el('div', { class: 'memo__title' }, 'Как запомнить'),
