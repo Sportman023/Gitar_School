@@ -47,8 +47,10 @@ export default {
           + 'Ми спустилось ниже всех, а сразу за Си малой октавы начинается До 1 октавы.'),
 
         el('h3', { class: 'block-title' }, 'Где живёт каждая нота'),
+        // top down, Си first: the cards start at the note closest to the staff
+        // and walk down the ledger lines, the way the child reads them
         el('div', { class: 'staff-grid' },
-          NOTES_0.map((note) => el('button', {
+          [...NOTES_0].reverse().map((note) => el('button', {
             class: 'staff-card',
             type: 'button',
             onclick: () => playPiano(note.freq),
