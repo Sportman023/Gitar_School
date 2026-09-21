@@ -1,9 +1,14 @@
-// "Second octave" section: a ladder of C5–G5 and cards showing where each
+// "Second octave" section: a ladder of C5–B5 and cards showing where each
 // note is on the staff. How it continues the first octave is shown in the
 // octave ladder.
 
 import { el, clear } from "../core/ui.js";
-import { renderStaff, renderStaffRow, playableMap } from "../core/staff.js";
+import {
+  renderStaff,
+  renderStaffRow,
+  playableMap,
+  staffBox,
+} from "../core/staff.js";
 import { colorToggle } from "../core/controls.js";
 import { store } from "../core/store.js";
 import { loadPiano, playPiano, playPianoScale } from "../core/piano.js";
@@ -12,7 +17,7 @@ import { NOTES_2, octaveName } from "../data/notes.js";
 export default {
   id: "octave2",
   title: "Вторая октава",
-  subtitle: "До, Ре, Ми, Фа, Соль на нотном стане",
+  subtitle: "Семь нот от До до Си над первой октавой",
   emoji: "🎶",
   accent: "#AB47BC",
   group: "staff",
@@ -24,6 +29,9 @@ export default {
 
     const screen = el("div", { class: "screen octave2" });
     root.append(screen);
+
+    // one box for every picture here, so Ля and Си fit above the staff
+    const box = staffBox(NOTES_2);
 
     function render() {
       clear(screen);
@@ -37,7 +45,7 @@ export default {
         ),
         colorToggle(render),
 
-        el("h3", { class: "block-title" }, "Лесенка из пяти нот"),
+        el("h3", { class: "block-title" }, "Лесенка из семи нот"),
         el(
           "div",
           { class: "staff-row" },
@@ -49,7 +57,8 @@ export default {
           "p",
           { class: "caption" },
           "Ноты шагают по очереди: линейка, промежуток, линейка, промежуток… " +
-            "До 2 октавы живёт между 3-й и 4-й линейками, а Соль забралась над пятой линейкой.",
+            "До 2 октавы живёт между 3-й и 4-й линейками, а Ля и Си забрались так высоко, " +
+            "что им понадобилась своя добавочная линеечка над станом.",
         ),
 
         el("h3", { class: "block-title" }, "Где живёт каждая нота"),
@@ -64,7 +73,7 @@ export default {
                 type: "button",
                 onclick: () => playPiano(note.freq),
               },
-              renderStaff(note, { colored }),
+              renderStaff(note, { colored, box }),
               el(
                 "div",
                 { class: "staff-card__name" },
@@ -96,7 +105,7 @@ export default {
           el(
             "div",
             { class: "memo__phrase" },
-            "Вторая октава живёт наверху стана",
+            "Ноты шагают по очереди: линейка, промежуток, линейка, промежуток…",
           ),
           el(
             "ul",
@@ -104,14 +113,13 @@ export default {
             el(
               "li",
               null,
-              "До — три линейки пропускаем – точку мы с тобою ставим",
+              "Чтобы найти нотку До второй октавы можно запомнит так: Три линейки пропускаем – точку мы с тобою ставим. Эта точка – нотка До! Поэтому нотка До и пишется ПОСЛЕ трёх напечатанных линеечек.",
             ),
             el(
               "li",
               null,
-              "Ми — в верхнем промежутке, Фа — на 5-й, самой верхней линейке",
+              "Ля — на добавочной линеечке над станом, а Си — прямо над ней",
             ),
-            el("li", null, "Соль сидит сверху на стане, над 5-й линейкой"),
             el("li", null, "Штиль у всех нот 2 октавы смотрит вниз, как у Си"),
           ),
         ),

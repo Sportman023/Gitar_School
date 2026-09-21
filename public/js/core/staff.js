@@ -4,28 +4,32 @@
 //   lines          y = 24, 34, 44, 54, 64  (top to bottom)
 //   first (E)      y = 64
 //   second (G)     y = 54  — the curl of the treble clef wraps around it
-// A note's position comes from its `staff` field in js/data/notes.js.
+// A note's position comes from its `staff` field in js/data/notes.js. Notes
+// outside the five lines hang on ledger lines of their own, above (the top of
+// the second octave) and below (middle C and the whole small octave), so how
+// big a picture has to be depends on the notes in it — see staffBox.
 //
 // Two pictures live here:
 //   renderStaff    — a staff with a single note (cards and quizzes);
 //   renderStaffRow — a long staff with notes in a row, like a ladder.
 
 import { svgEl } from './ui.js';
-import { octaveName } from '../data/notes.js';
+import { octaveName, octaveShort } from '../data/notes.js';
 
 const TOP_LINE = 24;
 const SPACING = 10;
 const BOTTOM_LINE = TOP_LINE + SPACING * 4;   // 64 — first line, note E
 const G_LINE = TOP_LINE + SPACING * 3;        // 54 — second line, note G
 const MIDDLE_STEP = 4;                        // middle line, note B
-const HEIGHT = 94;
+const MIDDLE_Y = TOP_LINE + SPACING * 2;      // 44 — the same line in coordinates
+const HEIGHT = 94;                            // picture with nothing below middle C
+const NOTE_ROOM = 13;                         // room beyond the outermost note head
 const NOTE_X = 88;
 const HEAD_RX = 6.3;
 const HEAD_RY = 4.7;
 
 const ROW_FIRST_X = 64;
 const ROW_STEP = 25;
-const ROW_BRACKET_Y = 92;
 
 // Classic treble clef, drawn as one filled outline. The outline is the
 // public-domain https://commons.wikimedia.org/wiki/File:GClef.svg
@@ -41,6 +45,19 @@ const CLEF_TRANSFORM = `translate(${CLEF_LEFT} ${G_LINE - CLEF_EYE_Y * CLEF_SCAL
 
 export function noteY(note) {
   return BOTTOM_LINE - note.staff * (SPACING / 2);
+}
+
+/**
+ * The box a picture needs so that these notes fit with their ledger lines:
+ * where its top edge is (above the staff the notes go into the minus) and how
+ * tall it is. The box is counted for a whole set of notes at once, so that
+ * cards or answers standing side by side are all the same size and the staff
+ * doesn't jump from one question to the next.
+ */
+export function staffBox(notes) {
+  const top = Math.min(0, ...notes.map((note) => noteY(note) - NOTE_ROOM));
+  const bottom = Math.max(HEIGHT, ...notes.map((note) => noteY(note) + NOTE_ROOM));
+  return { top: Math.round(top), height: Math.round(bottom - top) };
 }
 
 /** Five staff lines of the given length plus the treble clef. */
@@ -67,11 +84,15 @@ function noteParts(note, x, colored) {
   // stem: below the middle line it goes up on the right, from the middle line up it goes down on the left
   const stemUp = note.staff < MIDDLE_STEP;
   const stemX = stemUp ? x + HEAD_RX - 0.8 : x - HEAD_RX + 0.8;
+  // a note that hangs on ledger lines keeps its stem as far as the middle
+  // line — that's how it is engraved in real music, and the stem ties the
+  // note back to the staff
+  const stemEnd = stemUp ? Math.min(y - 32, MIDDLE_Y) : Math.max(y + 32, MIDDLE_Y);
   parts.push(svgEl('line', {
     x1: stemX,
     x2: stemX,
     y1: stemUp ? y - 1 : y + 1,
-    y2: stemUp ? y - 32 : y + 32,
+    y2: stemEnd,
     class: 'staff__stem',
   }));
 
@@ -87,15 +108,16 @@ function noteParts(note, x, colored) {
 
 /**
  * A staff with one note (or an empty staff when no note is given).
- * colored — paint the note head in its rainbow colour.
+ * colored — paint the note head in its rainbow colour;
+ * box — one box for a whole set of pictures (see staffBox).
  */
-export function renderStaff(note, { colored = true, extraClass = '' } = {}) {
+export function renderStaff(note, { colored = true, extraClass = '', box = staffBox(note ? [note] : []) } = {}) {
   const width = 126;
   const parts = staffBase(width);
   if (note) parts.push(...noteParts(note, NOTE_X, colored));
 
   return svgEl('svg', {
-    viewBox: `0 0 ${width} ${HEIGHT}`,
+    viewBox: `0 ${box.top} ${width} ${box.height}`,
     class: `staff ${extraClass}`.trim(),
     role: 'img',
     'aria-label': note ? `Нота ${note.ru} на нотном стане` : 'Пустой нотный стан',
@@ -110,7 +132,9 @@ export function renderStaff(note, { colored = true, extraClass = '' } = {}) {
 export function renderStaffRow(notes, { colored = true, extraClass = '' } = {}) {
   const xAt = (i) => ROW_FIRST_X + i * ROW_STEP;
   const width = xAt(notes.length - 1) + 22;
-  const height = ROW_BRACKET_Y + 16;
+  const box = staffBox(notes);
+  const bracketY = box.top + box.height - 2;  // the brackets pass under the lowest note
+  const height = bracketY + 16 - box.top;     // and their labels under the brackets
   const parts = staffBase(width);
 
   notes.forEach((note, i) => {
@@ -121,7 +145,7 @@ export function renderStaffRow(notes, { colored = true, extraClass = '' } = {}) 
       'aria-label': `Нота ${note.ru} ${octaveName(note)}`,
     },
       // a transparent full-height strip: a tiny note head is hard to hit with a finger
-      svgEl('rect', { x: xAt(i) - ROW_STEP / 2, y: 0, width: ROW_STEP, height, class: 'staff__hit' }),
+      svgEl('rect', { x: xAt(i) - ROW_STEP / 2, y: box.top, width: ROW_STEP, height, class: 'staff__hit' }),
       ...noteParts(note, xAt(i), colored)));
   });
 
@@ -130,13 +154,16 @@ export function renderStaffRow(notes, { colored = true, extraClass = '' } = {}) 
     const x1 = xAt(indexes[0]) - 9;
     const x2 = xAt(indexes[indexes.length - 1]) + 9;
     parts.push(
-      svgEl('path', { d: `M${x1} ${ROW_BRACKET_Y - 5} V${ROW_BRACKET_Y} H${x2} V${ROW_BRACKET_Y - 5}`, class: 'staff__bracket' }),
-      svgEl('text', { x: (x1 + x2) / 2, y: ROW_BRACKET_Y + 13, class: 'staff__bracket-text' }, `${octave}-я октава`),
+      svgEl('path', { d: `M${x1} ${bracketY - 5} V${bracketY} H${x2} V${bracketY - 5}`, class: 'staff__bracket' }),
+      svgEl('text', { x: (x1 + x2) / 2, y: bracketY + 13, class: 'staff__bracket-text' }, `${octaveShort(octave)} октава`),
     );
   }
 
   return svgEl('svg', {
-    viewBox: `0 0 ${width} ${height}`,
+    viewBox: `0 ${box.top} ${width} ${height}`,
+    // never squeeze the notes below their own size: a row that doesn't fit
+    // the screen is scrolled sideways instead (see .staff-row in styles.css)
+    style: `min-width:${width}px`,
     class: `staff ${extraClass}`.trim(),
     role: 'img',
     'aria-label': 'Ноты подряд на нотном стане',
