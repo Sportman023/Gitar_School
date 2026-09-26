@@ -43,6 +43,8 @@ export const GUITAR_SOUNDS = {
         id: 'arpeggio',
         name: 'Перебор',
         emoji: '🌙',
+        audio: './audio/tunes/arpeggio.m4a',
+        clip: 30,
         bpm: 110,
         ring: 1.6,
         voices: [
@@ -54,6 +56,8 @@ export const GUITAR_SOUNDS = {
         id: 'romance',
         name: 'Романс',
         emoji: '🌹',
+        audio: './audio/tunes/romance.m4a',
+        clip: 30,
         bpm: 66,
         ring: 1.2,
         voices: [
@@ -68,6 +72,8 @@ export const GUITAR_SOUNDS = {
         id: 'greensleeves',
         name: 'Зелёные рукава',
         emoji: '🍀',
+        audio: './audio/tunes/greensleeves.m4a',
+        clip: 30,
         bpm: 150,
         ring: 1,
         voices: [
@@ -91,6 +97,8 @@ export const GUITAR_SOUNDS = {
         id: 'lullaby',
         name: 'Колыбельная',
         emoji: '💤',
+        audio: './audio/tunes/lullaby.m4a',
+        clip: 30,
         bpm: 92,
         voices: [
           'E4:.5 E4 G4:2 E4:.5 E4 G4:2 E4:.5 G4 C5:1 B4:1.5 A4:.5 A4:1 G4 D4:.5 E4 '
@@ -99,9 +107,11 @@ export const GUITAR_SOUNDS = {
         ],
       },
       {
-        id: 'jacques',
-        name: 'Братец Яков',
-        emoji: '🔔',
+        id: 'geese',
+        name: 'Два весёлых гуся',
+        emoji: '🪿🪿',
+        audio: './audio/tunes/geese.m4a',
+        clip: 15,
         bpm: 120,
         voices: [
           'C4:1 D4 E4 C4 C4 D4 E4 C4 E4 F4 G4:2 E4:1 F4 G4:2 '
@@ -114,6 +124,8 @@ export const GUITAR_SOUNDS = {
         id: 'joy',
         name: 'Ода к радости',
         emoji: '🎉',
+        audio: './audio/tunes/joy.m4a',
+        clip: 30,
         bpm: 120,
         voices: [
           'E4:1 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4:1.5 D4:.5 D4:2 '
@@ -133,9 +145,11 @@ export const GUITAR_SOUNDS = {
     hello: 'A2+E3+A3+C#4+E4:2',
     tunes: [
       {
-        id: 'boogie',
-        name: 'Буги',
+        id: 'bachsjoke',
+        name: 'Шутка Баха',
         emoji: '🕺',
+        clip: 30,
+        audio: './audio/tunes/bachsjoke.m4a',
         bpm: 130,
         voices: [
           [
@@ -150,6 +164,8 @@ export const GUITAR_SOUNDS = {
         id: 'turca',
         name: 'Турецкий марш',
         emoji: '🥁',
+        clip: 30,
+        audio: './audio/tunes/turca.m4a',
         bpm: 116,
         voices: [
           `${TURCA} ${TURCA} A2+E3+A3+C4+E4:3`,
@@ -160,6 +176,8 @@ export const GUITAR_SOUNDS = {
         id: 'solo',
         name: 'Рок-соло',
         emoji: '🤘',
+        clip: 30,
+        audio: './audio/tunes/solo.m4a',
         bpm: 100,
         voices: [
           'A4:.5 C5 D5 E5 D5^:1 C5:.5 A4 G4 A4 C5 A4 G4 E4 G4:1 '
@@ -183,10 +201,13 @@ export const GUITAR_SOUNDS = {
     hello: 'C4+G4+B4+E5:3',
     tunes: [
       {
-        id: 'twinkle',
-        name: 'Звёздочка',
+        id: 'furelise',
+        name: 'К Элизе',
         emoji: '⭐',
         bpm: 132,
+        clip: 30,
+        audio: './audio/tunes/furelise.m4a',
+        ring: 1.2,
         voices: [
           'C5:1 C5 G5 G5 A5 A5 G5:2 F5:1 F5 E5 E5 D5 D5 C5:2 '
           + 'G5:1 G5 F5 F5 E5 E5 D5:2 G5:1 G5 F5 F5 E5 E5 D5:2 '
@@ -198,6 +219,8 @@ export const GUITAR_SOUNDS = {
         name: 'Лунная соната',
         emoji: '🌕',
         bpm: 56,
+        clip: 30,
+        audio: './audio/tunes/moonlight.m4a',
         ring: 1.2,
         voices: [
           triplets([
@@ -209,10 +232,12 @@ export const GUITAR_SOUNDS = {
         ],
       },
       {
-        id: 'starfall',
-        name: 'Звездопад',
+        id: 'vivaldistorm',
+        name: 'Шторм Вивальди',
         emoji: '🌠',
         bpm: 112,
+        clip: 30,
+        audio: './audio/tunes/vivaldistorm.m4a',
         ring: 0.8,
         voices: [
           'C4:.25 E4 G4 C5 E5 G5 C6:1 '
@@ -232,6 +257,8 @@ export const GUITAR_SOUNDS = {
         id: 'mountain',
         name: 'Пещера горного короля',
         emoji: '⛰️',
+        clip: 30,
+        audio: './audio/tunes/mountain.m4a',
         bpm: 110,
         voices: [`${MOUNTAIN_KING} @150 ${MOUNTAIN_KING} @200 ${MOUNTAIN_KING} B2+F#3+B3:3`],
       },
@@ -239,16 +266,20 @@ export const GUITAR_SOUNDS = {
         id: 'bumblebee',
         name: 'Полёт шмеля',
         emoji: '🐝',
+        clip: 15,
+        audio: './audio/tunes/bumblebee.m4a',
         bpm: 150,
         voices: [
           `${BUMBLEBEE} ${BUMBLEBEE} A4:.25 A#4 B4 C5 C#5 D5 D#5 E5 F5 E5 D#5 E5 F5 E5 D#5 E5 E5^:1 A2+E3+A3:2`,
         ],
       },
       {
-        id: 'gallop',
-        name: 'Галоп',
-        emoji: '🐎',
+        id: 'romeo_and_julietta',
+        name: 'Рамео и Джульетта',
+        emoji: '💔',
         bpm: 150,
+        clip: 30,
+        audio: './audio/tunes/romeo_and_julietta.m4a',
         voices: [
           repeat(
             `${repeat(gallop('E2'), 3)} G2+D3:.5 A2+E3 `

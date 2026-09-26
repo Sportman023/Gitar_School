@@ -172,14 +172,65 @@ export function stopGuitar() {
   setTimeout(() => outs.forEach((node) => node.disconnect()), 400);
 }
 
+// Recordings are decoded once; a missing file is remembered as null so the
+// tune falls back to the synth without asking the server again
+const recordings = new Map();
+
+function loadRecording(ac, url) {
+  if (!recordings.has(url)) {
+    recordings.set(url, fetch(url)
+      .then((res) => (res.ok ? res.arrayBuffer() : null))
+      .then((data) => (data ? ac.decodeAudioData(data) : null))
+      .catch(() => null));
+  }
+  return recordings.get(url);
+}
+
+/** Plays a recorded clip, at most `clip` seconds long, fading out at the end. */
+function playRecording(ac, buffer, clip, onEnd) {
+  const length = Math.min(buffer.duration, clip || Infinity);
+  const output = ac.createGain();
+  output.connect(ac.destination);
+  const now = ac.currentTime;
+  output.gain.setValueAtTime(1, now + Math.max(0, length - 1.5));
+  output.gain.linearRampToValueAtTime(0, now + length);
+  const source = ac.createBufferSource();
+  source.buffer = buffer;
+  source.connect(output);
+  source.start(now);
+  source.stop(now + length + 0.05);
+  const player = { ac, rig: { output }, sources: [source] };
+  player.timer = setTimeout(() => {
+    if (current !== player) return;
+    stopGuitar();
+    onEnd?.();
+  }, length * 1000 + 80);
+  current = player;
+}
+
 /**
- * Plays a tune ({ bpm, voices, ring? }) on a guitar timbre. Anything already
- * playing stops first. `onEnd` is called when the tune finishes by itself.
+ * Plays a tune ({ bpm, voices, ring?, audio?, clip? }) on a guitar timbre.
+ * A tune with `audio` plays that recording instead when the file is there,
+ * otherwise its voices. Anything already playing stops first. `onEnd` is
+ * called when the tune finishes by itself.
  */
 export function playTune(tune, timbre, onEnd) {
   stopGuitar();
   const ac = ensureAudio();
   if (!ac) return;
+
+  if (tune.audio) {
+    // hold the slot so a tap on another tune while loading wins
+    const pending = { ac, rig: {}, sources: [] };
+    current = pending;
+    loadRecording(ac, tune.audio).then((buffer) => {
+      if (current !== pending) return;
+      current = null;
+      if (buffer) playRecording(ac, buffer, tune.clip, onEnd);
+      else playTune({ ...tune, audio: null }, timbre, onEnd);
+    });
+    return;
+  }
 
   const voices = tune.voices.map((text) => parseVoice(text, tune.bpm || 100));
   const rig = buildRig(ac, timbre);
