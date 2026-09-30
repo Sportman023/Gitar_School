@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Гитарная школа переехала</title>
+<script>
+  // The app moved from /Gitar_School/ to /Guitar_School/ on the same site, so
+  // localStorage (and with it every child's stars) stays exactly where it was.
+  // Keep the rest of the address (/beta/, #screen) as is.
+  var to = location.href.replace(/\/Gitar_School(?=\/|$)/, '/Guitar_School');
+  if (to !== location.href) location.replace(to);
+</script>
+<style>body{font-family:system-ui,sans-serif;background:#161036;color:#fff;text-align:center;padding:40px 16px}a{color:#ffd166}</style>
+</head>
+<body>
+<p>Гитарная школа переехала:<br><a href="https://sportman023.github.io/Guitar_School/">sportman023.github.io/Guitar_School</a></p>
+</body>
+</html>
